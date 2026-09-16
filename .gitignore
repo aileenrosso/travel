@@ -1,0 +1,8 @@
+.DS_Store
+*.log
+__pycache__/
+_pycache_/
+*.pdf
+*.PDF
+*.docx
+*.xlsx

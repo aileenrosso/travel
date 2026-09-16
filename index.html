@@ -1,0 +1,2116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Travel Planner · Milton & Aileen</title>
+    
+    <!-- PWA Settings for iOS & Android -->
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
+    <meta name="theme-color" content="#FAF7F2">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Travel">
+    <meta name="format-detection" content="telephone=no">
+    
+    <!-- Premium Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-body: #FAF7F2;
+            --bg-card: #FFFFFF;
+            --border-subtle: #E8E2D8;
+            --text-main: #1F1B18;
+            --text-muted: #7E7266;
+            --gold: #C9A84C;
+            --gold-dark: #8F7226;
+            --gold-light: rgba(201, 168, 76, 0.09);
+            --gold-border: rgba(201, 168, 76, 0.35);
+            --navy: #0F1D2E;
+            --emerald: #059669;
+            --transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.45;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            overscroll-behavior-y: none;
+        }
+        body::after {
+            content: '';
+            position: fixed; inset: 0; z-index: 999; pointer-events: none;
+            opacity: 0.018; mix-blend-mode: multiply;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            background-repeat: repeat;
+        }
+        .app-shell {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            position: relative;
+            max-width: 720px;
+            margin: 0 auto;
+        }
+        header {
+            position: sticky;
+            top: 0;
+            background-color: rgba(250, 247, 242, 0.94);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-subtle);
+            min-height: calc(64px + env(safe-area-inset-top, 0px));
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-left: calc(18px + env(safe-area-inset-left, 0px));
+            padding-right: calc(18px + env(safe-area-inset-right, 0px));
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            user-select: none;
+            -webkit-user-select: none;
+            z-index: 200;
+        }
+        .logo-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.55rem;
+            font-weight: 700;
+            color: var(--text-main);
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .header-btn {
+            background: var(--gold-light);
+            border: 1px solid var(--gold-border);
+            color: var(--gold-dark);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: var(--transition);
+            text-decoration: none;
+        }
+        .header-btn:active {
+            transform: scale(0.96);
+            background-color: rgba(201, 168, 76, 0.2);
+        }
+
+        /* Top Breadcrumb Bar */
+        .breadcrumb-bar {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 18px;
+            background: #FFFFFF;
+            border-bottom: 1px solid var(--border-subtle);
+            animation: fadeIn 0.2s ease;
+        }
+        .breadcrumb-bar.active { display: flex; }
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--gold-dark);
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+        .back-btn:active { opacity: 0.7; }
+        .breadcrumb-title {
+            font-size: 0.76rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            max-width: 220px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Screens Container */
+        .main-content {
+            flex: 1;
+            padding: 16px calc(18px + env(safe-area-inset-right, 0px)) calc(100px + env(safe-area-inset-bottom, 0px)) calc(18px + env(safe-area-inset-left, 0px));
+            -webkit-overflow-scrolling: touch;
+        }
+        .screen {
+            display: none;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: var(--transition);
+        }
+        .screen.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Section Titles */
+        .dashboard-section-title {
+            font-size: 0.72rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin: 24px 0 12px 2px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Timepage / Timeo Ultra Tactile Trip Cards */
+        .trip-card-hero {
+            position: relative;
+            border-radius: 22px;
+            overflow: hidden;
+            margin-bottom: 22px;
+            box-shadow: 0 14px 34px rgba(15, 29, 46, 0.18);
+            background: #0F1D2E;
+            cursor: pointer;
+            transition: transform 0.22s ease, box-shadow 0.22s ease;
+            border: 1px solid rgba(201, 168, 76, 0.4);
+        }
+        .trip-card-hero:active {
+            transform: scale(0.985);
+        }
+        .trip-card-hero img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.55) contrast(1.1);
+            transition: transform 0.4s ease;
+        }
+        .trip-card-hero-overlay {
+            position: relative;
+            z-index: 2;
+            padding: 22px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 250px;
+            color: #FFF;
+        }
+
+        .trip-card-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+        .trip-card-item {
+            background: #FFFFFF;
+            border: 1px solid var(--border-subtle);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 4px 18px rgba(31, 27, 24, 0.04);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+            position: relative;
+        }
+        .trip-card-item:active {
+            transform: scale(0.985);
+            border-color: var(--gold);
+        }
+        .trip-card-cover-box {
+            position: relative;
+            height: 140px;
+            width: 100%;
+            overflow: hidden;
+            background: #2A2421;
+        }
+        .trip-card-cover-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.85);
+            transition: transform 0.3s ease;
+        }
+        .trip-card-body {
+            padding: 16px;
+        }
+
+        /* Badges & Status */
+        .badge-status {
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            padding: 4px 9px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .badge-status.active {
+            background: #C9A84C;
+            color: #0F1D2E;
+            box-shadow: 0 2px 8px rgba(201, 168, 76, 0.4);
+        }
+        .badge-status.upcoming {
+            background: rgba(15, 29, 46, 0.85);
+            color: #FFF;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(8px);
+        }
+        .weather-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #FFF;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 16px;
+        }
+        .weather-pill-light {
+            background: var(--gold-light);
+            border: 1px solid var(--gold-border);
+            color: var(--gold-dark);
+            padding: 4px 10px;
+            border-radius: 14px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Trip Detail Tabs Navigation */
+        .detail-sub-nav {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 12px 0 16px 0;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        .detail-sub-nav::-webkit-scrollbar { display: none; }
+        .sub-pill {
+            flex: 0 0 auto;
+            background: #FFFFFF;
+            border: 1px solid var(--border-subtle);
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-size: 0.74rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition);
+        }
+        .sub-pill.active {
+            background: var(--gold);
+            color: #FFFFFF;
+            border-color: var(--gold);
+            box-shadow: 0 2px 8px rgba(201, 168, 76, 0.3);
+        }
+
+        /* Smart Packing Engine UI */
+        .packing-config-card {
+            background: #FFFFFF;
+            border: 1px solid var(--border-subtle);
+            border-radius: 18px;
+            padding: 18px;
+            margin-bottom: 18px;
+            box-shadow: 0 4px 14px rgba(31, 27, 24, 0.03);
+        }
+        .segmented-control {
+            display: flex;
+            background: #F3EFEA;
+            padding: 4px;
+            border-radius: 12px;
+            margin-bottom: 14px;
+            gap: 4px;
+        }
+        .segment-btn {
+            flex: 1;
+            padding: 8px 10px;
+            border: none;
+            background: transparent;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            border-radius: 9px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: var(--transition);
+        }
+        .segment-btn.active {
+            background: #FFFFFF;
+            color: var(--text-main);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+        }
+
+        .switch-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-top: 1px solid var(--border-subtle);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .switch-toggle {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+        .switch-toggle input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; inset: 0;
+            background-color: #D1D5DB;
+            transition: .25s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute; content: "";
+            height: 18px; width: 18px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .25s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--gold); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        .packing-category-title {
+            font-size: 0.72rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--gold-dark);
+            margin: 18px 0 8px 2px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Checklists */
+        .check-item-ios {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            border-bottom: 1px solid rgba(232, 226, 216, 0.6);
+            padding: 12px 4px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+        .checkbox-ios {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 1.8px solid #D5CCC0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 1px;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+        .check-item-ios.checked .checkbox-ios {
+            background-color: var(--gold);
+            border-color: var(--gold);
+        }
+        .checkbox-ios svg {
+            width: 12px;
+            height: 12px;
+            stroke: #FFFFFF;
+            stroke-width: 3.5;
+            fill: none;
+            display: none;
+        }
+        .check-item-ios.checked .checkbox-ios svg { display: block; }
+        .check-item-ios.checked .check-text-title {
+            color: var(--text-muted);
+            text-decoration: line-through;
+        }
+        .check-text-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-main);
+            line-height: 1.3;
+        }
+        .check-text-desc {
+            font-size: 0.74rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* Activity Toggles (Golf & Playa) */
+        .activity-toggles-bar {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        @media (max-width: 540px) {
+            .activity-toggles-bar {
+                grid-template-columns: 1fr;
+            }
+        }
+        .activity-toggle-card {
+            background: #FFFFFF;
+            border: 1.5px solid var(--border-subtle);
+            border-radius: 14px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+        .activity-toggle-card.active {
+            border-color: #10B981;
+            background: #F0FDF4;
+        }
+        .toggle-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .toggle-icon {
+            font-size: 1.4rem;
+            line-height: 1;
+        }
+        .toggle-label {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .toggle-desc {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            line-height: 1.2;
+            margin-top: 2px;
+        }
+        .ios-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 26px;
+            flex-shrink: 0;
+            margin-left: 8px;
+        }
+        .ios-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .ios-switch .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #CBD5E1;
+            transition: .25s;
+            border-radius: 26px;
+        }
+        .ios-switch .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+            transition: .25s;
+            border-radius: 50%;
+        }
+        .ios-switch input:checked + .slider {
+            background-color: #10B981;
+        }
+        .ios-switch input:checked + .slider:before {
+            transform: translateX(18px);
+        }
+
+        /* Traveler Segmented Selector & Progress */
+        .traveler-selector {
+            display: flex;
+            background: #EFECE6;
+            border-radius: 14px;
+            padding: 4px;
+            gap: 4px;
+            margin-bottom: 12px;
+        }
+        .traveler-selector-btn {
+            flex: 1;
+            padding: 10px 4px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 10px;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        .traveler-selector-btn.active {
+            background: #FFFFFF;
+            color: var(--text-main);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        }
+        .badge-count {
+            font-size: 0.66rem;
+            background: rgba(0,0,0,0.06);
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: 800;
+        }
+        .traveler-selector-btn.active .badge-count {
+            background: var(--gold-light);
+            color: var(--gold-dark);
+        }
+        .packing-progress-wrapper {
+            background: #FFFFFF;
+            border: 1px solid var(--border-subtle);
+            border-radius: 14px;
+            padding: 12px 14px;
+            margin-bottom: 14px;
+        }
+        .packing-progress-bar-bg {
+            height: 6px;
+            background: #EFECE6;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        .packing-progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--gold), #10B981);
+            border-radius: 6px;
+            transition: width 0.3s ease;
+        }
+        .weather-advisory-box {
+            background: #F0FDF4;
+            border: 1px solid #BBF7D0;
+            border-radius: 14px;
+            padding: 12px 14px;
+            margin-bottom: 14px;
+            font-size: 0.78rem;
+            color: #166534;
+            line-height: 1.45;
+        }
+
+        /* Flight & Hotel Cards */
+        .flight-card, .hotel-card, .day-card {
+            background: #FFFFFF;
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 10px rgba(31, 27, 24, 0.025);
+        }
+        .card-action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+            background: var(--gold-light);
+            border: 1px solid var(--gold-border);
+            color: var(--gold-dark);
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            cursor: pointer;
+            margin-top: 10px;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        .card-action-btn:active {
+            transform: scale(0.98);
+            background: rgba(201, 168, 76, 0.22);
+        }
+
+        /* Day Timeline items */
+        .day-bullet {
+            font-size: 0.82rem;
+            color: var(--text-main);
+            margin-bottom: 6px;
+            line-height: 1.4;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        .day-bullet::before {
+            content: '•';
+            color: var(--gold);
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+        .chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .food-chip {
+            background: #FFF7ED;
+            border: 1px solid #FED7AA;
+            border-radius: 20px;
+            padding: 5px 12px;
+            font-size: 0.74rem;
+            font-weight: 600;
+            color: #9A3412;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 1px 3px rgba(154, 52, 18, 0.06);
+            transition: var(--transition);
+        }
+        .food-chip:active {
+            transform: scale(0.96);
+            background: #FFEDD5;
+        }
+
+        /* Fixed Bottom Dock */
+        .bottom-dock {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            min-height: 64px;
+            height: calc(64px + env(safe-area-inset-bottom, 0px));
+            background-color: rgba(250, 247, 242, 0.96);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border-subtle);
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            padding-top: 6px;
+            padding-left: calc(10px + env(safe-area-inset-left, 0px));
+            padding-right: calc(10px + env(safe-area-inset-right, 0px));
+            padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+            user-select: none;
+            -webkit-user-select: none;
+            z-index: 200;
+        }
+        @media (min-width: 720px) {
+            .bottom-dock {
+                max-width: 720px;
+                left: 50%;
+                transform: translateX(-50%);
+                border-radius: 20px 20px 0 0;
+            }
+        }
+        .dock-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.62rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            gap: 4px;
+            padding: 6px 14px;
+            transition: var(--transition);
+        }
+        .dock-btn svg {
+            width: 21px;
+            height: 21px;
+            stroke: currentColor;
+            stroke-width: 2.1;
+            fill: none;
+        }
+        .dock-btn.active { color: var(--gold-dark); }
+        .dock-btn.active svg { stroke: var(--gold-dark); }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 85px;
+            left: 50%;
+            transform: translateX(-50%) translateY(30px);
+            background-color: rgba(31, 27, 24, 0.94);
+            color: #FFFFFF;
+            padding: 9px 20px;
+            border-radius: 22px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            z-index: 400;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media print {
+            header, .breadcrumb-bar, .bottom-dock, .header-actions, .toast, button {
+                display: none !important;
+            }
+            .screen {
+                display: block !important;
+                position: static !important;
+                opacity: 1 !important;
+                transform: none !important;
+                padding: 10px 0 !important;
+                page-break-after: always;
+            }
+            body::after { display: none !important; }
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .spinning {
+            animation: spin 0.8s linear infinite !important;
+            display: inline-block !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-shell">
+        <header>
+            <div class="logo-text">
+                <span style="color: var(--gold-dark);">🧭</span> Travel Planner
+            </div>
+            <div class="header-actions">
+                <button class="header-btn" id="sync-btn" onclick="syncAndRefresh()"><span id="sync-icon" style="font-size: 0.9rem; display: inline-block;">🔄</span> <span id="sync-text">Sincronizar</span></button>
+                <button class="header-btn" onclick="window.print()"><span style="font-size: 0.9rem;">🖨️</span> Imprimir</button>
+            </div>
+        </header>
+
+        <!-- Top Breadcrumb Navigation -->
+        <div id="breadcrumb-bar" class="breadcrumb-bar">
+            <button class="back-btn" onclick="backToDashboard()">
+                <span style="font-size: 1.1rem; line-height: 1;">‹</span> Dashboard
+            </button>
+            <div id="breadcrumb-title" class="breadcrumb-title">Detalles del Viaje</div>
+        </div>
+
+        <div id="toast" class="toast">Guardado</div>
+
+        <main class="main-content">
+            <!-- Screen 1: Executive Master Dashboard -->
+            <section id="screen-dashboard" class="screen active">
+                <div id="dashboard-hero-container"></div>
+                
+                <div class="dashboard-section-title">
+                    <span>Próximos Viajes Programados</span>
+                    <span id="upcoming-count-badge" style="background: rgba(31,27,24,0.06); padding: 2px 8px; border-radius: 10px;">0</span>
+                </div>
+                <div id="dashboard-upcoming-container" class="trip-card-grid"></div>
+            </section>
+
+            <!-- Screen 2: Single Trip Detail View -->
+            <section id="screen-trip-detail" class="screen">
+                <div id="trip-detail-header"></div>
+
+                <!-- Sub Navigation Pills for active trip -->
+                <nav class="detail-sub-nav">
+                    <button class="sub-pill active" id="subpill-timeline" onclick="switchDetailTab('timeline')">📅 Agenda</button>
+                    <button class="sub-pill" id="subpill-flights" onclick="switchDetailTab('flights')">✈️🚄 Vuelos, Trenes & Tránsito</button>
+                    <button class="sub-pill" id="subpill-lodgings" onclick="switchDetailTab('lodgings')">🏨 Hospedaje</button>
+                    <button class="sub-pill" id="subpill-packing" onclick="switchDetailTab('packing')">🎒 Empaque Inteligente</button>
+                </nav>
+
+                <div id="detail-tab-timeline" class="detail-tab-content"></div>
+                <div id="detail-tab-flights" class="detail-tab-content" style="display: none;"></div>
+                <div id="detail-tab-lodgings" class="detail-tab-content" style="display: none;"></div>
+                <div id="detail-tab-packing" class="detail-tab-content" style="display: none;"></div>
+            </section>
+
+            <!-- Screen 3: Global Smart Packing Hub -->
+            <section id="screen-packing" class="screen">
+                <div style="margin-bottom: 18px;">
+                    <h1 style="font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 700;">Motor de Empaque Inteligente</h1>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Cálculo dinámico por clima, días y capacidad de equipaje</p>
+                </div>
+                <div id="global-packing-content"></div>
+            </section>
+
+            <!-- Screen 4: Traveler Profile & Emergency Hotlines -->
+            <section id="screen-docs" class="screen">
+                <div style="margin-bottom: 18px;">
+                    <h1 style="font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 700;">Perfil VIP & Hotlines</h1>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Programas de fidelidad y conserjería 24 horas</p>
+                </div>
+                <div id="profile-container"></div>
+                <div class="dashboard-section-title" style="margin-top: 24px;">🚨 Directorio de Asistencia Directa</div>
+                <div id="hotlines-container"></div>
+            </section>
+        </main>
+
+        <!-- Fixed Bottom Dock -->
+        <nav class="bottom-dock">
+            <button class="dock-btn active" id="dock-btn-dashboard" onclick="switchMainTab('dashboard')">
+                <svg viewBox="0 0 24 24"><polygon points="3 9 12 2 21 9 21 20 12 20 12 14 3 14"/></svg>
+                Dashboard
+            </button>
+            <button class="dock-btn" id="dock-btn-active-trip" onclick="goToActiveTrip()">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Próximo
+            </button>
+            <button class="dock-btn" id="dock-btn-packing" onclick="switchMainTab('packing')">
+                <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                Empaque
+            </button>
+            <button class="dock-btn" id="dock-btn-docs" onclick="switchMainTab('docs')">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Perfil
+            </button>
+        </nav>
+    </div>
+
+    <script>
+const EMBEDDED_STATE = {"version":"5.4","appName":"Travel Planner","lastUpdated":"2026-09-16 11:14:32","travelersProfile":{"primaryTravelers":"Milton Cruz & Aileen Rosso","groupMembers":["Milton Cruz","Aileen Rosso","Laura Franco","Ricardo Miró"],"loyaltyPrograms":{"delta":"Platinum Medallion (SkyTeam Elite Plus) — SkyPriority, Delta Sky Club / Lounge, upgrades","jetblue":"Mosaic 3 — TrueBlue Aileen: 2009139422 · Milton: 2009139624 — 2 maletas gratis, embarque prioritario","iberia":"Iberia Plus — Aileen: 127217016 · Milton: JCH8028","amex":"The Platinum Card — Centurion Lounges, Delta Sky Club, FHR Benefits, Room Upgrades, Late Check-out"},"emergencyContacts":[{"label":"Renfe Atención al Cliente / AVE VIP","number":"+34 912 320 320"},{"label":"Rosewood Villa Magna Madrid Concierge","number":"+34 91 587 1234"},{"label":"Modern Travel & Tours (Flavia Rivera - Agente)","number":"+1 787-721-3984"},{"label":"Solhop 24h Transfer Support (Ref SOL374254)","number":"+34 951 120 740"},{"label":"SO/ Sotogrande Resort & Spa Concierge","number":"+34 956 565 400"},{"label":"Hotel Colón Gran Meliá Sevilla","number":"+34 954 505 599"},{"label":"Iberia Plus & VIP Customer Line","number":"+34 900 670 420"},{"label":"Air France Platinum Priority Line","number":"+33 9 69 39 36 54"},{"label":"ITA Airways VIP Customer Support","number":"+39 06 8596 0020"},{"label":"Hôtel Le Meurice Paris Concierge Desk","number":"+33 1 87 16 44 50"},{"label":"Hostellerie Cèdre & Spa Concierge Beaune","number":"+33 3 80 24 01 01"},{"label":"Maison Champy Winery Concierge (Beaune)","number":"+33 3 80 23 75 21"},{"label":"Cantine Menhir Salento (Mrs. Giusi Giracello)","number":"+39 393 9460233"},{"label":"EU European Emergency (Spain, France & Italy)","number":"112"},{"label":"U.S. Embassy Madrid","number":"+34 91 587 2200"},{"label":"U.S. Embassy Paris","number":"+33 1 43 12 22 22"},{"label":"U.S. Embassy Rome","number":"+39 06 46741"}]},"trips":[{"id":"trip-spain-andalucia-sep2026","status":"active","category":"active","title":"España & Andalucía: Sotogrande y Sevilla","subtitle":"Vuelos SJU-SDQ-MAD en Business, SO/ Sotogrande 5*, Hotel Colón en Sevilla, AVE Confort y Rosewood Villa Magna 5* GL en Madrid","destination":"Sotogrande, Sevilla & Madrid (España)","country":"España","flag":"🇪🇸","coverImage":"https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=1200&q=80","startDate":"2026-09-18","endDate":"2026-09-29","datesDisplay":"18 – 29 Sep 2026","durationDays":12,"leadPassenger":"Milton Cruz (+1 787 504 7476) & Aileen Rosso","climate":{"summary":"Mediterráneo cálido y soleado en Costa del Sol (64°F - 79°F), días soleados y agradables en Sevilla (66°F - 84°F).","tempLowF":64,"tempHighF":84,"condition":"Soleado / Templado","icon":"☀️","packingAdvice":"Prendas de lino, camisas frescas, gafas de sol, ropa de golf y calzado cómodo para el casco histórico de Sevilla."},"activitiesConfig":{"golf":true,"beach":true},"baggageConfig":{"mode":"checked","laundryAvailable":true,"purpose":"resort_golf_culture","formalNights":2},"flights":[{"segment":"Ida Tramo 1 · San Juan ➔ Santo Domingo","airline":"JetBlue Airways","flightNumber":"JetBlue 2537","pnr":"SUBNVC","from":"SJU","fromName":"San Juan Luis Muñoz Marín (Terminal A)","to":"SDQ","toName":"Santo Domingo Las Américas","depTime":"12:45 PM","arrTime":"1:48 PM","date":"Viernes 18 Sep 2026","status":"CONFIRMADO","seats":"Aileen Rosso 4A · Milton Cruz 4C (EvenMore® Space)","tickets":"Aileen: 2792120630835 · Milton: 2792120630058","perks":"Mosaic 3, 2 maletas gratis c/u, embarque Grupo 1","notes":"Conexión de 2h 57m en SDQ hacia el vuelo transatlántico de Iberia."},{"segment":"Ida Tramo 2 · Santo Domingo ➔ Madrid Barajas","airline":"Iberia","flightNumber":"IB 0266","pnr":"K2Y8B","cabin":"Business Class (Lie-Flat)","from":"SDQ","fromName":"Santo Domingo Las Américas","to":"MAD","toName":"Madrid Barajas (Terminal 4S)","depTime":"16:45 (4:45 PM)","arrTime":"07:20 AM (+1, Sáb 19 Sep)","date":"Viernes 18 Sep – Sábado 19 Sep 2026","duration":"8h 35m","status":"CONFIRMADO","seats":"Aileen Rosso & Milton Cruz (Iberia Plus: 127217016 / JCH8028)","perks":"Cama Lie-Flat 180°, cena gourmet y desayuno a bordo. Sala VIP Velázquez T4S a la llegada.","notes":"Llegada a las 07:20 AM a Madrid T4S y conexión al vuelo hacia Málaga."},{"segment":"Ida Tramo 3 · Madrid ➔ Málaga (Costa del Sol)","airline":"Iberia","flightNumber":"IB 1003","from":"MAD","fromName":"Madrid Barajas (Terminal 4)","to":"AGP","toName":"Málaga-Costa del Sol","depTime":"Mañana","arrTime":"12:45 PM","date":"Sábado 19 Sep 2026","status":"CONFIRMADO","notes":"Aterrizaje en Málaga a las 12:45 PM. Chofer de Solhop espera en llegadas."},{"segment":"Retorno Transatlántico · Madrid ➔ Santo Domingo","airline":"Iberia","flightNumber":"IB 0263","pnr":"K2Y8B","cabin":"Business Class (Lie-Flat)","from":"MAD","fromName":"Madrid Barajas (Terminal 4S)","to":"SDQ","toName":"Santo Domingo Las Américas","depTime":"15:45 (3:45 PM)","arrTime":"18:35 (6:35 PM)","date":"Lunes 28 Sep 2026","duration":"8h 50m","status":"CONFIRMADO","seats":"Aileen Rosso & Milton Cruz (Business Class)","perks":"Almuerzo y merienda gourmet, cama 180°, franquicia de equipaje Business."},{"segment":"Retorno Caribe · Punta Cana ➔ San Juan","airline":"JetBlue Airways","flightNumber":"JetBlue 2332","pnr":"AWBZLX","from":"PUJ","fromName":"Punta Cana (Terminal A)","to":"SJU","toName":"San Juan Luis Muñoz Marín","depTime":"1:25 PM","arrTime":"2:19 PM","date":"Martes 29 Sep 2026","status":"CONFIRMADO","tickets":"Aileen: 2792118412998 · Milton: 2792118412999","perks":"Mosaic 3, 2 maletas gratis c/u, embarque prioritario","notes":"Vuelo de regreso a Puerto Rico completando el viaje."}],"transfers":[{"company":"Solhop Airport Transfers","ref":"SOL374254","type":"Vehículo Privado Premium (Sedan exclusivo)","pickup":"Málaga Airport Arrivals (Conductor con cartel a nombre de Milton Cruz)","pickupTime":"12:45 PM (Sábado 19 Sep 2026)","destination":"SO/ Sotogrande Resort & Spa (Av. Almenara S/N, San Roque, Cádiz)","duration":"~1h 10m por autopista AP-7","price":"142.00 €","payment":"A pagar directamente al conductor en efectivo o tarjeta de crédito","supportPhone":"+34 951 120 740","supportPhoneUk":"+44 203 897 0838"}],"lodgings":[{"name":"SO/ Sotogrande Resort & Spa 5*****","city":"Sotogrande (Cádiz)","address":"Avenida Almenara S/N, 11310 Sotogrande, San Roque, Cádiz, España","checkin":"Sáb 19 Sep (desde 15:00)","checkout":"Mar 22 Sep (hasta 12:00)","conf":"SOL374254-RESORT","cost":"Confirmado · 5 Estrellas Gran Lujo (3 Noches)","image":"https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=800&q=80","mapQuery":"SO+Sotogrande+Resort+Spa+San+Roque+Cadiz","phone":"+34 956 565 400","highlights":"Campo de golf Almenara de 27 hoyos, Elysium Spa de 2,800 m², restaurantes Cortijo & Society, vistas al Mediterráneo."},{"name":"Hotel Colón, a Gran Meliá Hotel 5*****","city":"Sevilla","address":"Canalejas 1, Casco Antiguo, 41001 Sevilla, España","checkin":"Mar 22 Sep (desde 15:00)","checkout":"Vie 25 Sep (hasta 12:00)","conf":"6107554872 (PIN: 4129)","cost":"1,529.10 € · The Leading Hotels of the World (3 Noches) · Habitación Premium · Desayuno incluido","image":"https://images.unsplash.com/photo-1549880338-65ddcdfd017b?auto=format&fit=crop&w=800&q=80","mapQuery":"Hotel+Colon+Gran+Melia+Canalejas+1+Sevilla","phone":"+34 954 505 599","highlights":"Hotel histórico de autor miembro de The Leading Hotels of the World en el corazón de Sevilla, diseño de Philippe Starck y alta gastronomía."},{"name":"Rosewood Villa Magna 5***** GL","city":"Madrid","address":"Paseo de la Castellana 22, Barrio de Salamanca, 28046 Madrid, España","checkin":"Vie 25 Sep (desde 15:00)","checkout":"Lun 28 Sep (hasta 12:00)","conf":"32298SG208578","cost":"2,574.00 € · Premier Room (3 Noches) · Milton Cruz & Aileen Rosso","image":"https://images.unsplash.com/photo-1549880338-65ddcdfd017b?auto=format&fit=crop&w=800&q=80","mapQuery":"Rosewood+Villa+Magna+Paseo+de+la+Castellana+22+Madrid","phone":"+34 91 587 1234","email":"villamagna@rosewoodhotels.com","highlights":"Palacio urbano de ultra-lujo en el Paseo de la Castellana (Barrio de Salamanca). Alta gastronomía en Restaurante Amós por Jesús Sánchez (3★ Michelin), spa Sense con auténtico hammam turco y servicio de concierge distinguido."}],"timeline":[{"date":"Vie 18 Sep","dest":"Salida","title":"Vuelo SJU ➔ SDQ ➔ Salida Transatlántica a Madrid","items":["12:45 PM Salida en vuelo JetBlue 2537 de San Juan (SJU) a Santo Domingo (SDQ, llega 1:48 PM) en asientos EvenMore Space 4A/4C (Conf: SUBNVC)","Conexión de 2h 57m en Santo Domingo con acceso a salón VIP","16:45 PM Salida en vuelo transatlántico Iberia IB 0266 (SDQ ➔ MAD T4S) en cabina Business Class Lie-Flat (Conf: K2Y8B)","Cena gourmet diseñada por chefs estrella Michelin y descanso en cama de 180°"],"lunchOptions":[]},{"date":"Sáb 19 Sep","dest":"Sotogrande","title":"Llegada a España & Check-in en SO/ Sotogrande","items":["07:20 AM Aterrizaje en Madrid Barajas (MAD T4S). Tránsito y desayuno en la Sala VIP Velázquez","Conexión en vuelo IB 1003 hacia el Aeropuerto de Málaga (AGP, llega 12:45 PM)","Encuentro en terminal de llegadas con chofer de Solhop (cartel Milton Cruz, Ref: SOL374254, 142€)","Traslado privado de 1h 10m por autopista AP-7 a SO/ Sotogrande Resort & Spa 5*****","Check-in, tarde de piscina/spa Elysium y cena en Restaurante Cortijo"],"lunchOptions":[{"name":"Cortijo Tapas & Grill (SO/ Sotogrande)","query":"Cortijo Restaurant SO Sotogrande"}]},{"date":"Dom 20 Sep","dest":"Sotogrande","title":"Golf en Almenara (27 Hoyos) & Marina de Sotogrande","items":["Desayuno buffet andaluz en Society Clubhouse","Mañana deportiva: Ronda de golf en Almenara Golf Club","Almuerzo frente a los yates en la Marina de Sotogrande","Tarde de relax con vistas al Peñón de Gibraltar y cena de autor"],"lunchOptions":[{"name":"Midas Marina Sotogrande","query":"Midas Restaurante Marina Sotogrande"},{"name":"Cancha II Asador","query":"Cancha II Sotogrande"}]},{"date":"Lun 21 Sep","dest":"Sotogrande","title":"Día de Bienestar, Circuito Termal & Pueblos Blancos","items":["Circuito de hidroterapia termal en Elysium Spa (2,800 m²)","Almuerzo ligero en la piscina infinita","Paseo por Castellar de la Frontera y atardecer mediterráneo","Cena maridada con vinos andaluces"],"lunchOptions":[{"name":"Society Clubhouse (SO/ Sotogrande)","query":"Society Clubhouse SO Sotogrande"}]},{"date":"Mar 22 Sep","dest":"Sevilla","title":"Traslado a Sevilla & Check-in en Hotel Colón Gran Meliá","items":["12:00 PM Check-out de SO/ Sotogrande","Traslado privado hacia Sevilla (~2h)","15:00 PM Check-in en Hotel Colón, a Gran Meliá Hotel 5***** (The Leading Hotels of the World, Conf: 6107554872)","Copa de bienvenida en el patio interior señorial","Paseo vespertino por el Barrio de Santa Cruz y cena de tapas sevillanas"],"lunchOptions":[{"name":"El Burladero (Hotel Colón Gran Meliá)","query":"Restaurante El Burladero Sevilla"},{"name":"Casa Morales (Tapas Históricas)","query":"Casa Morales Sevilla"}]},{"date":"Mié 23 Sep","dest":"Sevilla","title":"Sevilla Monumental: Real Alcázar, Catedral & La Giralda","items":["Desayuno buffet premium incluido en Hotel Colón Gran Meliá","Visita guiada privada al Real Alcázar de Sevilla (joya mudéjar de la UNESCO)","Ascenso a la Giralda y recorrido por la Catedral gótica más grande del mundo","Almuerzo gastronómico junto al río Guadalquivir","Paseo al atardecer por el Puente de Triana"],"lunchOptions":[{"name":"Abades Triana (Vistas a la Torre del Oro)","query":"Abades Triana Sevilla"},{"name":"Eslava (Alta Cocina de Tapas)","query":"Restaurante Eslava Sevilla"}]},{"date":"Jue 24 Sep","dest":"Sevilla","title":"Plaza de España, Parque de María Luisa & Arte Flamenco","items":["Mañana: Paseo por la majestuosa Plaza de España y los jardines de María Luisa","Almuerzo gastronómico andaluz","Tarde de compras en las boutiques de Calle Sierpes y Tetuán","Espectáculo íntimo de cante y baile flamenco en tablao histórico de autor"],"lunchOptions":[{"name":"Cañabota (Estrella Michelin Mariscos)","query":"Restaurante Canabota Sevilla"}]},{"date":"Vie 25 Sep","dest":"Sevilla ➔ Madrid","title":"Check-out Hotel Colón ➔ AVE Confort a Madrid ➔ Check-in Rosewood Villa Magna","items":["11:00 AM Traslado a la estación Sevilla Santa Justa","11:32 AM Salida en Tren de Alta Velocidad Renfe AVE 02111 hacia Madrid Puerta de Atocha (llega 14:11 PM)","Asientos Confort: Coche 1, Plazas 9B (Aileen) y 9C (Milton) con aperitivo a bordo (Conf: 73MWSR)","14:11 PM Llegada a Madrid Puerta de Atocha y traslado privado a Rosewood Villa Magna (Paseo de la Castellana 22)","15:00 PM Check-in en Rosewood Villa Magna 5***** GL (Premier Room, Conf: 32298SG208578)","Paseo por las exclusivas boutiques de la Milla de Oro (Serrano, Ortega y Gasset) y cena de autor en Restaurante Amós (Jesús Sánchez, 3★ Michelin)"],"lunchOptions":[{"name":"Aperitivo gourmet a bordo del AVE","query":"Renfe AVE Confort Aperitivo"},{"name":"Las Brasas de Castellana (Rosewood Villa Magna)","query":"Las Brasas de Castellana Rosewood Madrid"}]},{"date":"Sáb 26 Sep","dest":"Madrid","title":"Triángulo del Arte, Museo del Prado & Alta Cultura Madrileña","items":["Desayuno buffet gourmet en Rosewood Villa Magna","Mañana cultural privada: Visita al Museo Nacional del Prado y recorrido por el Paisaje de la Luz (Patrimonio Mundial UNESCO)","Paseo relajado por el Real Jardín Botánico y los Jardines del Buen Retiro","Almuerzo gastronómico en terraza emblemática","Tarde de compras exclusivas en Barrio de Salamanca y cócteles en Tarde.O Bar"],"lunchOptions":[{"name":"Platea Madrid","query":"Platea Madrid Goya"},{"name":"Restaurante Amazónico","query":"Amazonico Madrid Jorge Juan"}]},{"date":"Dom 27 Sep","dest":"Madrid","title":"Madrid de los Austrias, Palacio Real & Sesión de Spa Sense","items":["Mañana histórica: Recorrido guiado por el Palacio Real de Madrid, Plaza de Oriente y Plaza Mayor","Aperitivo castizo y tapas selectas en el Mercado de San Miguel o Cava Baja","Tarde de descanso y bienestar: Circuito termal y hammam turco en Sense Spa (Rosewood Villa Magna)","Cena de despedida de España en restaurante gastronómico"],"lunchOptions":[{"name":"Casa Lucio (Cava Baja)","query":"Casa Lucio Madrid Cava Baja"},{"name":"Mercado de San Miguel","query":"Mercado de San Miguel Madrid"}]},{"date":"Lun 28 Sep","dest":"Madrid ➔ SDQ","title":"Check-out Rosewood Villa Magna ➔ Vuelo Transatlántico en Business a Santo Domingo","items":["Desayuno gourmet y check-out a las 12:00 PM de Rosewood Villa Magna","Traslado privado hacia el Aeropuerto de Madrid Barajas Adolfo Suárez Terminal 4S","Almuerzo y descanso en la Sala VIP Velázquez T4S (Iberia Premium Lounge)","15:45 PM Salida en vuelo transatlántico Iberia IB 0263 (MAD ➔ SDQ) en cabina Business Class Lie-Flat (Conf: K2Y8B)","18:35 PM Aterrizaje en Santo Domingo (SDQ) y estancia de descanso en República Dominicana"],"lunchOptions":[{"name":"Sala VIP Velázquez (Madrid Barajas T4S)","query":"Iberia VIP Lounge Velazquez Madrid T4S"}]},{"date":"Mar 29 Sep","dest":"San Juan","title":"Vuelo de Regreso al Hogar · Punta Cana ➔ San Juan","items":["Traslado al Aeropuerto de Punta Cana (PUJ Terminal A)","1:25 PM Salida en vuelo JetBlue 2332 hacia San Juan (SJU)","2:19 PM Aterrizaje en San Juan Luis Muñoz Marín culminando el gran viaje por España"],"lunchOptions":[]}],"trains":[{"operator":"Renfe","trainType":"AVE","trainNumber":"AVE 02111","pnr":"73MWSR","class":"Confort (Billete Prémium)","route":"Sevilla Santa Justa ➔ Madrid Puerta de Atocha","from":"SVQ","fromStation":"Sevilla Santa Justa","to":"MAD","toStation":"Madrid Puerta de Atocha Almudena Grandes","date":"Viernes 25 Sep 2026","depTime":"11:32 AM","arrTime":"14:11 PM","duration":"2h 39m","status":"CONFIRMADO","seats":"Aileen Rosso (Coche 1, Plaza 9B) · Milton Cruz (Coche 1, Plaza 9C)","tickets":"Aileen: 7562202099270 · Milton: 7562202099288","combinadoCercanias":"Aileen: CYNH8 · Milton: YY5DD (Billete Cercanías incluido)","perks":"Billete Prémium con Aperitivo / Merienda incluido a bordo, asientos Confort de máxima amplitud, silencio y acceso a Sala Club.","cost":"228.40 € (Total 2 plazas)","notes":"Cierre del acceso al tren 2 minutos antes de la salida."}]},{"id":"trip-europe-autumn-2026","status":"upcoming","category":"upcoming","title":"Grand European Autumn: Paris, Burgundy & Puglia","subtitle":"Gira de otoño por Francia e Italia con amigos (Grupo de 6)","destination":"París, Borgoña & Puglia (Francia e Italia)","country":"Francia & Italia","flag":"🥐🍷🌊","coverImage":"https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=1200&q=80","startDate":"2026-10-18","endDate":"2026-11-01","datesDisplay":"18 Oct – 01 Nov 2026","durationDays":15,"climate":{"summary":"Otoño fresco en Francia (39°F - 61°F), templado en Puglia (52°F - 72°F).","tempLowF":39,"tempHighF":72,"condition":"Fresco / Follaje Dorado","icon":"🍂","packingAdvice":"Capas técnicas de lana/cashmere, trench impermeable para Francia; lino ligero y cortavientos para el yate en Puglia."},"activitiesConfig":{"golf":false,"beach":true},"baggageConfig":{"mode":"checked","laundryAvailable":true,"purpose":"culinary_cultural_yacht","formalNights":4},"agency":{"name":"Modern Travel & Tours","agent":"Flavia Rivera","phone":"+1 787-721-3984","email":"flavia@moderntravelpr.com"},"flights":[{"segment":"Salida Transatlántica · Rep. Dominicana ➔ París vía Madrid","airline":"Iberia","pnr":"CDK85U","agencyCode":"KZTOZG","date":"Dom 18 Oct – Lun 19 Oct 2026","status":"CONFIRMADO & EMITIDO","cabin":"Business Class (I) · Lie-Flat Suites","tickets":[{"name":"Milton Cruz","ticket":"0757551797698","seatLeg1":"04D","seatLeg2":"02D"},{"name":"Aileen Rosso","ticket":"0757551797700","seatLeg1":"04H","seatLeg2":"02F"}],"legs":[{"flightNum":"IB 264","from":"SDQ","fromCity":"Santo Domingo","to":"MAD","toCity":"Madrid Barajas T4S","dep":"Dom 18 Oct · 21:15","arr":"Lun 19 Oct · 11:35","aircraft":"Airbus A330","duration":"8h 20m","seats":"Milton 04D · Aileen 04H","perks":"Cama Lie-Flat 180°, cena gourmet Michelin."},{"isLayover":true,"title":"Escala VIP Madrid Barajas (MAD)","duration":"4h 10m","details":"Acceso a Sala VIP Velázquez T4S (duchas, buffet y descanso)."},{"flightNum":"IB 589","from":"MAD","fromCity":"Madrid T4","to":"CDG","toCity":"París Charles de Gaulle T3","dep":"Lun 19 Oct · 15:45","arr":"Lun 19 Oct · 17:55","aircraft":"Airbus A321","duration":"2h 10m","seats":"Milton 02D · Aileen 02F"}]},{"segment":"Vuelo Intermedio · París / Borgoña ➔ Puglia (Bari)","airline":"Air France (Operado por HOP!)","pnr":"CEV4RW","agencyCode":"SHROXL","date":"Domingo 25 Octubre 2026","status":"CONFIRMADO & EMITIDO","cabin":"Economy (W) · SkyTeam Elite Plus","loyalty":"Delta Platinum Medallion vinculado","tickets":[{"name":"Milton Cruz","ticket":"0577551797713","seat":"14D","ff":"DL 2198603264"},{"name":"Aileen Rosso","ticket":"0577551797714","seat":"14F","ff":"DL 2024557726"}],"legs":[{"flightNum":"AF 1288","from":"CDG","fromCity":"París Charles de Gaulle T2G","to":"BRI","toCity":"Bari Karol Wojtyła","dep":"Dom 25 Oct · 16:40","arr":"Dom 25 Oct · 19:00","aircraft":"Embraer 190","duration":"2h 20m (Directo)","seats":"Milton 14D · Aileen 14F"}]},{"segment":"Retorno · Puglia ➔ Roma ➔ Madrid ➔ Rep. Dominicana","airline":"ITA Airways + Iberia","pnr":"BWASGL (ITA) · CDK85U (Iberia)","agencyCode":"UFAUMC / KZTOZG","date":"Domingo 01 Noviembre 2026","status":"CONFIRMADO & EMITIDO","cabin":"AZ Economy (T) + Iberia Business Lie-Flat (I)","tickets":[{"name":"Milton Cruz","ticketAZ":"0557551797717","ticketIB":"0757551797698","seatAZ":"11D","seatIB_FCO":"02D","seatIB_MAD":"02D"},{"name":"Aileen Rosso","ticketAZ":"0557551797718","ticketIB":"0757551797700","seatAZ":"11E","seatIB_FCO":"02F","seatIB_MAD":"02H"}],"legs":[{"flightNum":"AZ 1620 (ITA Airways)","from":"BDS","fromCity":"Brindisi Salento","to":"FCO","toCity":"Roma Fiumicino T1","dep":"Dom 01 Nov · 06:20 AM","arr":"Dom 01 Nov · 07:35 AM","aircraft":"Airbus A320","duration":"1h 15m","seats":"Milton 11D · Aileen 11E"},{"isLayover":true,"title":"Escala VIP Roma Fiumicino (FCO T1)","duration":"4h 25m","details":"Sala VIP Piazza di Spagna de ITA Airways (desayuno barista y descanso)."},{"flightNum":"IB 648 (Iberia Business)","from":"FCO","fromCity":"Roma FCO T1","to":"MAD","toCity":"Madrid Barajas T4","dep":"Dom 01 Nov · 12:00 PM","arr":"Dom 01 Nov · 14:35 PM","aircraft":"Airbus A320","duration":"2h 35m","seats":"Milton 02D · Aileen 02F"},{"isLayover":true,"title":"Tránsito Madrid Barajas","duration":"1h 40m","details":"Conexión preferente entre T4 y T4S."},{"flightNum":"IB 263 (Iberia Business Lie-Flat)","from":"MAD","fromCity":"Madrid Barajas T4S","to":"SDQ","toCity":"Santo Domingo","dep":"Dom 01 Nov · 16:15 PM","arr":"Dom 01 Nov · 20:30 PM","aircraft":"Airbus A330","duration":"9h 15m","seats":"Milton 02D · Aileen 02H"}]}],"lodgings":[{"name":"Hôtel Le Meurice (Dorchester Collection)","city":"París","host":"Marc Letellier (Diamond Club Specialist)","address":"228 Rue de Rivoli, 75001 París, Francia","image":"https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80","checkin":"Mar 20 Oct (desde 15:00)","checkout":"Jue 22 Oct (hasta 12:00)","conf":"LMR013498050 · LMR013498051 · LMR013498052","cost":"€3,540 / hab. (Diamond Club · Upgrade Garantizado · Crédito 100€)","mapQuery":"Hotel+Le+Meurice+228+Rue+de+Rivoli+Paris"},{"name":"Hostellerie Cèdre & Spa Beaune*****","city":"Borgoña (Beaune)","host":"Nathalie (Responsable Réservation)","address":"10 Boulevard Maréchal Foch, 21200 Beaune, Francia","image":"https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80","checkin":"Jue 22 Oct (desde 16:00)","checkout":"Dom 25 Oct (hasta 11:00)","conf":"3 Habitaciones · Total: 3,894€","cost":"Confirmado · Desayuno buffet incluido · Spa Nuxe · Cata en Maison Champy","mapQuery":"Hostellerie+Cedre+Spa+10+Boulevard+Marechal+Foch+Beaune"},{"name":"Sextantio Le Grotte della Civita","city":"Matera","address":"Via Civita 28, 75100 Matera, Italia","image":"https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=800&q=80","checkin":"Lun 26 Oct (desde 14:00)","checkout":"Mar 27 Oct (hasta 12:00)","conf":"Sextantio-Cività (1 Noche / 6 Adultos)","cost":"Confirmado · Suites trogloditas excavadas en roca viva","mapQuery":"Sextantio+Le+Grotte+della+Civita+Matera"},{"name":"Masseria Le Carrube","city":"Ostuni","address":"Contrada Carrube, 72017 Ostuni BR, Italia","image":"https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=800&q=80","checkin":"Mar 27 Oct (desde 16:00)","checkout":"Vie 30 Oct (hasta 09:25)","conf":"Masseria-Carrube (3 Noches / 6 Adultos)","cost":"Confirmado · Arquitectura tradicional encalada entre olivares milenarios","mapQuery":"Masseria+Le+Carrube+Ostuni"},{"name":"Palazzo Bozzi Corso (La Fiermontina)","city":"Lecce","address":"Via Umberto I 38, 73100 Lecce, Italia","image":"https://images.unsplash.com/photo-1549880338-65ddcdfd017b?auto=format&fit=crop&w=800&q=80","checkin":"Vie 30 Oct (desde 15:00)","checkout":"Dom 01 Nov (salida 04:45 AM)","conf":"Palazzo-Bozzi-Corso (2 Noches / 6 Adultos)","cost":"Confirmado · Palacio aristocrático de 1775 a pasos de Santa Croce","mapQuery":"Palazzo+Bozzi+Corso+Via+Umberto+I+Lecce"}],"timeline":[{"date":"Dom 18 Oct","dest":"Salida","title":"Vuelo Transatlántico · Santo Domingo ➔ Madrid","items":["21:15 PM Salida en vuelo IB 264 (Iberia) desde SDQ en Airbus A330","Cabina Business Lie-Flat: cena gourmet y descanso confortable en cama de 180°","Asientos contiguos asignados: Milton 04D, Aileen 04H"],"lunchOptions":[]},{"date":"Lun 19 Oct","dest":"París","title":"Escala VIP en Madrid & Llegada a París CDG","items":["11:35 AM Aterrizaje en Madrid Barajas (MAD T4S)","Escala holgada de 4h 10m en la Sala VIP Velázquez T4S (duchas, tapas y descanso)","15:45 PM Conexión en vuelo IB 589 a París Charles de Gaulle (CDG T3)","17:55 PM Aterrizaje en París. Chofer privado en minivan Mercedes para traslado al hotel","Noche de adaptación horaria y cena ligera en París"],"lunchOptions":[{"name":"Sala VIP Velázquez (Madrid T4S)","query":"Iberia VIP Lounge Velazquez Madrid T4S"}]},{"date":"Mar 20 Oct","dest":"París","title":"Bienvenida del Grupo & Check-in en Le Meurice","items":["Reunión oficial del grupo de 6 viajeros en París","Check-in en Hôtel Le Meurice (Rue de Rivoli) con upgrade Diamond Club a Superior Room","Copa de champagne de bienvenida frente a las Tullerías","Tarde libre: Paseo relajado por el Jardin des Tuileries y Place Vendôme","Cena de bienvenida en bistró parisino"],"lunchOptions":[{"name":"Restaurant Le Dalí (Le Meurice)","query":"Restaurant Le Dali Le Meurice Paris"},{"name":"Café Marly (Louvre)","query":"Cafe Marly Paris"}]},{"date":"Mié 21 Oct","dest":"París","title":"París Cultural, Alta Joyería & Gastronomía","items":["Desayuno gourmet completo bajo las molduras doradas de Le Meurice","Mañana cultural guiada: Musée de l'Orangerie (Monet) o Palais Garnier","Almuerzo gastronómico en terraza","Tarde de compras y perfumería nicho en Rue Saint-Honoré y Place Vendôme","Cena de alta gastronomía Michelin"],"lunchOptions":[{"name":"Loulou Paris (Tuileries)","query":"Loulou Restaurant Paris Tuileries"},{"name":"Benoit Paris (Alain Ducasse)","query":"Benoit Paris Alain Ducasse"}]},{"date":"Jue 22 Oct","dest":"Borgoña","title":"Traslado a Borgoña & Almuerzo 3★ Lameloise","items":["10:00 AM Check-out de Le Meurice y salida hacia Borgoña en minivan privada Mercedes (315 km, ~3h 15m)","13:30 PM Almuerzo extraordinario de tres estrellas Michelin en Maison Lameloise (Chagny)","16:00 PM Check-in en Hostellerie Cèdre & Spa Beaune*****","Paseo por el casco amurallado de Beaune y Hospices de Beaune","Cena en Restaurante Le Carmin o Clos du Cèdre"],"lunchOptions":[{"name":"Maison Lameloise (3★ Michelin, Chagny)","query":"Maison Lameloise Chagny France"}]},{"date":"Vie 23 Oct","dest":"Borgoña","title":"Maison Joseph Drouhin & Cavas Subterráneas","items":["Mañana: Visita privada y cata de vinos Premier & Grand Cru en Maison Joseph Drouhin","Exploración de las históricas cavas subterráneas de 2.5 hectáreas bajo la ciudad de Beaune","Almuerzo gastronómico entre viñedos de la Côte de Beaune","Tarde de catas exclusivas en bodegas centenarias","Cena privada maridada con grandes añadas"],"lunchOptions":[{"name":"Clos du Cèdre (1★ Michelin)","query":"Clos du Cedre Beaune"},{"name":"La Table du Square (Beaune)","query":"La Table du Square Beaune"}]},{"date":"Sáb 24 Oct","dest":"Borgoña","title":"Route des Grands Crus & Cena Mítica en Ma Cuisine","items":["Mañana: Terroirs legendarios de Puligny-Montrachet y Chassagne-Montrachet","Almuerzo de autor en Chassagne-Montrachet","Cata de cortesía en Maison Champy (la bodega más antigua de Borgoña, 1720)","Cena íntima en el mítico Ma Cuisine (meca mundial de coleccionistas de vino)"],"lunchOptions":[{"name":"Le Chassagne (Chassagne-Montrachet)","query":"Restaurant Le Chassagne Chassagne Montrachet"},{"name":"Le Montrachet Restaurant","query":"Restaurant Le Montrachet Puligny Montrachet"}]},{"date":"Dom 25 Oct","dest":"Puglia","title":"Check-out de Beaune ➔ Vuelo AF 1288 a Bari (Puglia)","items":["Desayuno en Hostellerie Cèdre y check-out a las 10:30 AM","Traslado privado en minivan Mercedes al Aeropuerto de París CDG Terminal 2G","16:40 PM Vuelo confirmado AF 1288 (Air France HOP!) directo de CDG a Bari BRI","Asientos confirmados: Milton 14D, Aileen 14F (PNR: CEV4RW)","19:00 PM Aterrizaje en Bari Karol Wojtyła. Chofer privado espera al grupo para iniciar la experiencia en Puglia"],"lunchOptions":[{"name":"The Library Lounge (Hostellerie Cèdre)","query":"Hostellerie Cedre Beaune"}]},{"date":"Lun 26 Oct","dest":"Puglia","title":"Bienvenida en Matera & Cena en Iglesia Cueva","items":["12:00 PM Traslado panorámico por las Murgas hacia Matera (Basilicata)","14:00 PM Check-in en Sextantio Le Grotte della Civita (suites cueva excavadas en roca viva)","Tarde contemplando los barrancos y la historia milenaria de los Sassi","20:00 PM Cena privada exclusiva dentro de una iglesia-cueva del siglo XI a la luz de las velas"],"lunchOptions":[{"name":"Trattoria del Cavaliere (Matera)","query":"Trattoria del Cavaliere Matera"}]},{"date":"Mar 27 Oct","dest":"Puglia","title":"Tour UNESCO Matera & Almuerzo en Bosque DiCecca","items":["10:00 AM Tour guiado a pie por los Sassi de Matera (locación de 007)","12:00 PM Check-out de Sextantio y salida en minivan hacia Ostuni","13:00 PM Almuerzo extraordinario en Baby DiCecca en el bosque de robles de Mercadante","16:00 PM Check-in en Masseria Le Carrube (Ostuni, 3 noches)"],"lunchOptions":[{"name":"Baby DiCecca (Mercadante Forest)","query":"Baby DiCecca Cassano delle Murge"}]},{"date":"Mié 28 Oct","dest":"Puglia","title":"Yate Privado en Polignano a Mare & Atardecer en Ostuni","items":["09:30 AM Navegación privada de 3.5h en yate Antares 11 (35 pies) por las cuevas de Polignano y Monopoli","Nado en aguas zafiro, solárium, prosecco y snacks a bordo","17:00 PM Paseo guiado al atardecer por la Ciudad Blanca de Ostuni","Cena libre en plaza histórica con vistas a los olivares"],"lunchOptions":[{"name":"Grotta Palazzese (Polignano)","query":"Grotta Palazzese Polignano a Mare"},{"name":"Osteria del Tempo Perso (Ostuni)","query":"Osteria del Tempo Perso Ostuni"}]},{"date":"Jue 29 Oct","dest":"Puglia","title":"Taller de Orecchiette, Locorotondo & Alberobello","items":["11:00 AM Taller culinario práctico (3h) en finca: amasar orecchiette y recetas de huerto","Almuerzo compartido festivo con vinos de Puglia","15:00 PM Paseo por Locorotondo sobre el Valle de Itria","Visita a Alberobello (sitio UNESCO con más de 1,000 trullos tradicionales)"],"lunchOptions":[{"name":"Trattoria Terra Madre (Alberobello)","query":"Trattoria Terra Madre Alberobello"}]},{"date":"Vie 30 Oct","dest":"Puglia","title":"Lecce Barroca, Street Food & Check-in en Palacio","items":["09:25 AM Check-out de Masseria Le Carrube y traslado a Lecce (1h)","10:30 AM Tour a pie gastronómico barroco: pasticciotto caliente, café leccese con hielo y rustico salado","Almuerzo ligero maridado con vinos Salice Salentino","15:00 PM Check-in en Palazzo Bozzi Corso (junto a Santa Croce, 2 noches)"],"lunchOptions":[{"name":"Caffè Alvino (Piazza Sant'Oronzo)","query":"Caffe Alvino Lecce"},{"name":"Tabisca Il Vico dei Tarocchi (Lecce)","query":"Tabisca Il Vico dei Tarocchi Lecce"}]},{"date":"Sáb 31 Oct","dest":"Puglia","title":"Cata VIP en Cantine Menhir Salento & Osteria Origano","items":["11:00 AM Recibimiento VIP por la Sra. Giusi Giracello en Cantine Menhir Salento","Visita a bodegas y viñedos en Masseria Marangelli","Almuerzo gastronómico maridado con vinos Primitivo y Negroamaro en Osteria Origano","Tarde libre en Lecce antes del vuelo de madrugada"],"lunchOptions":[{"name":"Osteria Origano (Masseria Marangelli)","query":"Osteria Origano Menhir Salento"}]},{"date":"Dom 01 Nov","dest":"Retorno","title":"Retorno en Business · Brindisi ➔ Roma ➔ Madrid ➔ SDQ","items":["04:45 AM Check-out y traslado en minivan a Brindisi BDS (35 min)","06:20 AM Vuelo AZ 1620 (ITA Airways) BDS a Roma FCO T1 (asientos 11D/11E, llega 07:35 AM)","Desayuno y descanso de 4h 25m en Sala VIP Piazza di Spagna T1","12:00 PM Vuelo IB 648 (Iberia Business) Roma FCO a Madrid MAD T4 (asientos 02D/02F, llega 14:35)","Tránsito ágil a T4S y abordaje del vuelo transatlántico","16:15 PM Vuelo IB 263 (Iberia Business Lie-Flat) MAD T4S a Santo Domingo SDQ (asientos 02D/02H)","20:30 PM Llegada a SDQ concluyendo el gran viaje otoñal en Business Class, y enlace a San Juan"],"lunchOptions":[{"name":"Sala VIP Piazza di Spagna (Roma FCO T1)","query":"Piazza di Spagna Lounge FCO T1 Rome"}]}]},{"id":"trip-explora-amazon-2028","status":"upcoming","category":"upcoming","title":"EXPLORA II: Gran Expedición al Amazonas","subtitle":"Travesía oceánica de ultra-lujo y selva amazónica (11 Noches)","destination":"San Juan (PR) ➔ Río Amazonas ➔ Manaus (Brasil)","country":"Caribe, Atlántico & Brasil","flag":"🚢🌴","coverImage":"https://images.unsplash.com/photo-1548574505-5e239809ee19?auto=format&fit=crop&w=1200&q=80","startDate":"2028-02-06","endDate":"2028-02-17","datesDisplay":"06 – 17 Feb 2028","durationDays":12,"climate":{"summary":"Clima tropical húmedo y cálido de selva amazónica (73°F - 88°F). Lluvias tropicales y sol radiante.","tempLowF":73,"tempHighF":88,"condition":"Tropical Húmedo","icon":"🌴","packingAdvice":"Prendas de lino ligero y telas transpirables, repelente de insectos de alta gama, calzado náutico y atuendos resort-chic."},"activitiesConfig":{"golf":false,"beach":true},"baggageConfig":{"mode":"checked","laundryAvailable":true,"purpose":"ultra_luxury_cruise","formalNights":5},"cruise":{"ship":"EXPLORA II","line":"Explora Journeys (MSC Luxury Ocean Travel)","voyage":"A Journey through Coastal History & the Heart of the Amazon","dates":"06 Febrero – 17 Febrero 2028 (11 Noches)","bookingRef":"10194376","agency":"Modern Travel & Tours (Flavia Rivera: 787-721-3984 / flavia@moderntravelpr.com)","suite":"Penthouse Suite #7113 (Deck 7)","bed":"King Bed · Terraza Privada Frente al Océano","embarkation":"San Juan, PR (06 Feb 2028, 19:00)","disembarkation":"Manaus, Brasil (17 Feb 2028, 12:00)","virtuosoCredit":"$300 USD de crédito a bordo cortesía de Virtuoso","inclusions":["Penthouse Suite de diseño con terraza privada frente al mar y ventanales panorámicos","$300 USD de crédito a bordo cortesía de Virtuoso Experience","Vinos de reserva, champagne y cócteles de autor ilimitados en todos los restaurantes y bares","9 experiencias gastronómicas refinadas sin recargo alguno","Acceso completo al circuito termal e hidroterapia del Ocean Wellness Spa","Wi-Fi satelital Starlink de ultra-alta velocidad ilimitado","Servicio dedicado de suite host / mayordomo las 24 horas","Todas las propinas a bordo totalmente incluidas"]},"timeline":[{"date":"06 Feb 2028","title":"Embarque en San Juan, Puerto Rico","items":["Check-in preferente en el puerto de San Juan","Copa de bienvenida en la Penthouse Suite #7113","19:00 PM Zarpe rumbo al Océano Atlántico y el Río Amazonas"],"lunchOptions":[]},{"date":"17 Feb 2028","title":"Llegada al Corazón del Amazonas (Manaus, Brasil)","items":["Navegación por el encuentro de las aguas (Río Negro y Río Solimões)","12:00 PM Llegada a Manaus, noche a bordo y exploración guiada"],"lunchOptions":[]}]}],"discoveredFilesCount":31};
+        let appData = null;
+        let currentScreen = 'dashboard';
+        let currentTripId = null;
+        let currentDetailTab = 'timeline';
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').then((reg) => {
+                    reg.update();
+                }).catch(err => console.warn('SW:', err));
+            });
+        }
+
+        // Init App Data
+        window.addEventListener('DOMContentLoaded', () => {
+            // Check if there is a pending toast after file:// reload
+            const pendingMsg = sessionStorage.getItem('sync_toast_msg');
+            if (pendingMsg) {
+                sessionStorage.removeItem('sync_toast_msg');
+                setTimeout(() => {
+                    showToast(pendingMsg);
+                }, 350);
+            }
+
+            const cached = localStorage.getItem('travel_planner_v54_state');
+            let useEmbedded = true;
+            if (cached) {
+                try {
+                    const parsed = JSON.parse(cached);
+                    // Compare lastUpdated timestamps
+                    if (parsed && parsed.lastUpdated && EMBEDDED_STATE.lastUpdated) {
+                        const parsedTime = new Date(parsed.lastUpdated.replace(/-/g, '/')).getTime();
+                        const embeddedTime = new Date(EMBEDDED_STATE.lastUpdated.replace(/-/g, '/')).getTime();
+                        // If embedded state is newer, or if cached has fewer trips, use embedded
+                        if (parsedTime >= embeddedTime && (parsed.trips || []).length >= (EMBEDDED_STATE.trips || []).length) {
+                            appData = parsed;
+                            useEmbedded = false;
+                        }
+                    }
+                } catch(e) {}
+            }
+
+            if (useEmbedded) {
+                appData = JSON.parse(JSON.stringify(EMBEDDED_STATE));
+                saveState();
+            }
+
+            // Ensure activitiesConfig exists on all trips
+            (appData.trips || []).forEach(t => {
+                if (!t.activitiesConfig) t.activitiesConfig = { golf: true, beach: true };
+            });
+
+            renderAll();
+        });
+
+        function saveState() {
+            if (!appData) return;
+            localStorage.setItem('travel_planner_v54_state', JSON.stringify(appData));
+        }
+
+        async function syncAndRefresh() {
+            const btn = document.getElementById('sync-btn');
+            const icon = document.getElementById('sync-icon');
+            const text = document.getElementById('sync-text');
+            if (icon) icon.classList.add('spinning');
+            if (text) text.textContent = 'Sincronizando...';
+
+            let synced = false;
+            let syncSource = '';
+
+            // Clean up any legacy cache keys
+            localStorage.removeItem('travel_planner_v52_state');
+            localStorage.removeItem('travel_planner_v51_state');
+            localStorage.removeItem('travel_planner_v5_state');
+
+            // 1. Try local sync API (if local server is running)
+            try {
+                const apiEndpoints = ['/api/sync', 'http://localhost:8080/api/sync'];
+                for (const ep of apiEndpoints) {
+                    try {
+                        const controller = new AbortController();
+                        const timer = setTimeout(() => controller.abort(), 3500);
+                        const res = await fetch(ep, {
+                            method: 'GET',
+                            signal: controller.signal,
+                            cache: 'no-store',
+                            headers: { 'Accept': 'application/json' }
+                        });
+                        clearTimeout(timer);
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data && data.trips && data.trips.length > 0) {
+                                appData = data;
+                                saveState();
+                                syncSource = 'OneDrive en Vivo';
+                                synced = true;
+                                break;
+                            }
+                        }
+                    } catch (err) {}
+                }
+            } catch (e) {}
+
+            // 2. Try fetching static state.json directly
+            if (!synced) {
+                try {
+                    const controller = new AbortController();
+                    const timer = setTimeout(() => controller.abort(), 2000);
+                    const res = await fetch('./state.json?_t=' + Date.now(), {
+                        signal: controller.signal,
+                        cache: 'no-store'
+                    });
+                    clearTimeout(timer);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data && data.trips && data.trips.length > 0) {
+                            appData = data;
+                            saveState();
+                            syncSource = 'state.json';
+                            synced = true;
+                        }
+                    }
+                } catch (e) {}
+            }
+
+            // 3. Fallback: if running as local file (file:///) or offline
+            if (!synced) {
+                if (window.location.protocol === 'file:') {
+                    localStorage.removeItem('travel_planner_v52_state');
+                    sessionStorage.setItem('sync_toast_msg', '✅ Aplicación actualizada con la versión más reciente del disco');
+                    window.location.reload();
+                    return;
+                } else {
+                    appData = JSON.parse(JSON.stringify(EMBEDDED_STATE));
+                    saveState();
+                    syncSource = 'Datos Maestros';
+                    synced = true;
+                }
+            }
+
+            // Clear Service Worker Caches
+            if ('caches' in window) {
+                try {
+                    const keys = await caches.keys();
+                    await Promise.all(keys.map(k => caches.delete(k)));
+                } catch(e) {}
+            }
+
+            renderAll();
+
+            if (icon) icon.classList.remove('spinning');
+            if (text) text.textContent = 'Sincronizar';
+
+            const tripCount = (appData.trips || []).length;
+            const updatedTime = appData.lastUpdated ? appData.lastUpdated.split(' ')[1] || '' : '';
+            showToast(`✅ ${syncSource}: ${tripCount} viajes sincronizados (${updatedTime})`);
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            if (!toast) return;
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2200);
+        }
+
+        function renderAll() {
+            renderDashboard();
+            renderGlobalPacking();
+            renderDocs();
+        }
+
+        // Screen & Tab Routing
+        function switchMainTab(tabId) {
+            currentScreen = tabId;
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.dock-btn').forEach(b => b.classList.remove('active'));
+
+            const targetScreen = document.getElementById('screen-' + tabId);
+            if (targetScreen) targetScreen.classList.add('active');
+
+            const targetDockBtn = document.getElementById('dock-btn-' + tabId);
+            if (targetDockBtn) targetDockBtn.classList.add('active');
+
+            const breadcrumbBar = document.getElementById('breadcrumb-bar');
+            if (breadcrumbBar) breadcrumbBar.classList.remove('active');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function goToActiveTrip() {
+            const activeTrip = (appData.trips || []).find(t => t.status === 'active') || (appData.trips || [])[0];
+            if (activeTrip) {
+                openTripDetail(activeTrip.id);
+            } else {
+                switchMainTab('dashboard');
+            }
+        }
+
+        function openTripDetail(tripId, subTab = 'timeline') {
+            currentTripId = tripId;
+            currentScreen = 'trip-detail';
+            const trip = (appData.trips || []).find(t => t.id === tripId);
+            if (!trip) return;
+
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            const detailScreen = document.getElementById('screen-trip-detail');
+            if (detailScreen) detailScreen.classList.add('active');
+
+            // Show Breadcrumb
+            const breadcrumbBar = document.getElementById('breadcrumb-bar');
+            const breadcrumbTitle = document.getElementById('breadcrumb-title');
+            if (breadcrumbBar && breadcrumbTitle) {
+                breadcrumbBar.classList.add('active');
+                breadcrumbTitle.textContent = trip.title;
+            }
+
+            renderTripDetailContent(trip);
+            switchDetailTab(subTab);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function backToDashboard() {
+            switchMainTab('dashboard');
+        }
+
+        function switchDetailTab(tabId) {
+            currentDetailTab = tabId;
+            document.querySelectorAll('.sub-pill').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.detail-tab-content').forEach(c => c.style.display = 'none');
+
+            const targetPill = document.getElementById('subpill-' + tabId);
+            if (targetPill) targetPill.classList.add('active');
+
+            const targetTab = document.getElementById('detail-tab-' + tabId);
+            if (targetTab) targetTab.style.display = 'block';
+        }
+
+        // Dashboard Rendering (TripIt Pro + Timepage Hybrid)
+        function renderDashboard() {
+            const heroContainer = document.getElementById('dashboard-hero-container');
+            const upcomingContainer = document.getElementById('dashboard-upcoming-container');
+            const upcomingCountEl = document.getElementById('upcoming-count-badge');
+
+            if (!heroContainer || !upcomingContainer) return;
+
+            const trips = appData.trips || [];
+            const activeTrip = trips.find(t => t.status === 'active') || trips[0];
+            const upcomingTrips = trips.filter(t => t.id !== (activeTrip ? activeTrip.id : ''));
+
+            if (upcomingCountEl) upcomingCountEl.textContent = upcomingTrips.length;
+
+            // 1. Hero Card: Active / Immediate Next Trip
+            if (activeTrip) {
+                const depDate = new Date(activeTrip.startDate + 'T00:00:00');
+                const now = new Date();
+                const diffDays = Math.ceil((depDate - now) / (1000 * 60 * 60 * 24));
+                const countdownStr = diffDays > 0 ? `✈️ Faltan ${diffDays} días` : (diffDays === 0 ? '✈️ ¡Salida Hoy!' : '🌟 En Progreso');
+
+                heroContainer.innerHTML = `
+                    <div class="trip-card-hero" onclick="openTripDetail('${activeTrip.id}')">
+                        <img src="${activeTrip.coverImage}" alt="${activeTrip.title}" onerror="this.style.display='none'">
+                        <div class="trip-card-hero-overlay">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <span class="badge-status active">PRÓXIMA SALIDA INMEDIATA</span>
+                                <div class="weather-pill">
+                                    <span>${activeTrip.climate?.icon || '🌤️'}</span>
+                                    <span>${activeTrip.climate?.tempLowF || 64}°F / ${activeTrip.climate?.tempHighF || 84}°F</span>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                    <span style="font-size: 1.2rem;">${activeTrip.flag || '📍'}</span>
+                                    <span style="color: #E7C975; font-size: 0.76rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;">${activeTrip.datesDisplay} · ${activeTrip.durationDays} días</span>
+                                </div>
+                                <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 2.3rem; font-weight: 700; line-height: 1.05; text-shadow: 0 2px 10px rgba(0,0,0,0.6);">${activeTrip.title}</h2>
+                                <p style="font-size: 0.82rem; color: rgba(255,255,255,0.9); margin-top: 4px;">${activeTrip.subtitle || activeTrip.destination}</p>
+                                
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.2);">
+                                    <span style="background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); padding: 4px 12px; border-radius: 20px; font-size: 0.72rem; font-weight: 700;">${countdownStr}</span>
+                                    <span style="font-size: 0.76rem; color: #E7C975; font-weight: 700;">Ver Itinerario Completo ›</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                heroContainer.innerHTML = '';
+            }
+
+            // 2. Upcoming Trips Grid
+            upcomingContainer.innerHTML = '';
+            upcomingTrips.forEach(t => {
+                const card = document.createElement('div');
+                card.className = 'trip-card-item';
+                card.onclick = () => openTripDetail(t.id);
+
+                const climateHtml = t.climate ? `
+                    <span class="weather-pill-light">
+                        <span>${t.climate.icon || '🌤️'}</span> ${t.climate.tempLowF || 64}°F - ${t.climate.tempHighF || 84}°F
+                    </span>
+                ` : '';
+
+                card.innerHTML = `
+                    <div class="trip-card-cover-box">
+                        <img src="${t.coverImage}" alt="${t.title}" onerror="this.parentElement.style.display='none'">
+                        <div style="position: absolute; top: 12px; left: 12px;">
+                            <span class="badge-status upcoming">PROGRAMADO</span>
+                        </div>
+                        <div style="position: absolute; top: 12px; right: 12px;">
+                            <span style="background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); color: #FFF; font-size: 0.68rem; font-weight: 700; padding: 4px 10px; border-radius: 20px;">${t.durationDays} Días</span>
+                        </div>
+                    </div>
+                    <div class="trip-card-body">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <span style="font-size: 0.74rem; font-weight: 700; color: var(--gold-dark);">${t.datesDisplay}</span>
+                            ${climateHtml}
+                        </div>
+                        <div style="font-family: 'Cormorant Garamond', serif; font-size: 1.45rem; font-weight: 700; line-height: 1.15; color: var(--text-main); margin-bottom: 4px;">${t.title}</div>
+                        <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 12px;">📍 ${t.destination}</div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border-subtle); padding-top: 10px; font-size: 0.74rem; font-weight: 700; color: var(--gold-dark);">
+                            <span>Logística & Reservas</span>
+                            <span>Explorar ›</span>
+                        </div>
+                    </div>
+                `;
+                upcomingContainer.appendChild(card);
+            });
+        }
+
+        // Single Trip Detail Content Renderer
+        function renderTripDetailContent(trip) {
+            const headerBox = document.getElementById('trip-detail-header');
+            if (headerBox) {
+                headerBox.innerHTML = `
+                    <div style="position: relative; border-radius: 20px; overflow: hidden; height: 180px; margin-bottom: 14px; background: #0F1D2E;">
+                        <img src="${trip.coverImage}" alt="${trip.title}" style="width: 100%; height: 100%; object-fit: cover; filter: brightness(0.65);">
+                        <div style="position: absolute; inset: 0; padding: 18px; display: flex; flex-direction: column; justify-content: flex-end; color: #FFF;">
+                            <div style="font-size: 0.72rem; font-weight: 700; color: #E7C975; text-transform: uppercase;">${trip.datesDisplay} · ${trip.durationDays} Días</div>
+                            <h1 style="font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 700; line-height: 1.1;">${trip.title}</h1>
+                            <div style="font-size: 0.78rem; opacity: 0.9;">📍 ${trip.destination}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Tab 1: Timeline
+            const tabTimeline = document.getElementById('detail-tab-timeline');
+            if (tabTimeline) {
+                tabTimeline.innerHTML = '';
+                (trip.timeline || []).forEach(day => {
+                    const card = document.createElement('div');
+                    card.className = 'day-card';
+                    let bullets = (day.items || []).map(b => `<div class="day-bullet">${b}</div>`).join('');
+                    let diningChips = (day.lunchOptions || []).map(f => {
+                        const q = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(f.query || f.name)}`;
+                        return `<a href="${q}" target="_blank" class="food-chip">🍽️ ${f.name}</a>`;
+                    }).join('');
+
+                    card.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <span style="font-size: 0.7rem; font-weight: 800; color: var(--gold-dark); text-transform: uppercase; letter-spacing: 0.05em;">${day.date}</span>
+                            ${day.dest ? `<span style="font-size: 0.68rem; background: var(--gold-light); color: var(--gold-dark); padding: 2px 8px; border-radius: 10px; font-weight: 700;">${day.dest}</span>` : ''}
+                        </div>
+                        <div style="font-family: 'Cormorant Garamond', serif; font-size: 1.35rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px;">${day.title}</div>
+                        ${bullets}
+                        ${diningChips ? `<div class="chips-container">${diningChips}</div>` : ''}
+                    `;
+                    tabTimeline.appendChild(card);
+                });
+            }
+
+            // Tab 2: Flights & Transit
+            const tabFlights = document.getElementById('detail-tab-flights');
+            if (tabFlights) {
+                tabFlights.innerHTML = '';
+
+                // Transfers
+                (trip.transfers || []).forEach(tr => {
+                    const trCard = document.createElement('div');
+                    trCard.className = 'flight-card';
+                    trCard.style.borderLeft = '4px solid #10B981';
+                    trCard.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <span style="font-size: 0.68rem; font-weight: 800; background: #ECFDF5; color: #059669; padding: 2px 8px; border-radius: 6px;">TRASLADO PRIVADO</span>
+                            <span style="font-size: 0.74rem; font-weight: 700; color: #059669;">Ref: ${tr.ref}</span>
+                        </div>
+                        <div style="font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 700;">${tr.company} · ${tr.type}</div>
+                        <div style="font-size: 0.78rem; color: var(--text-muted); margin: 4px 0;">📍 <strong>Recogida:</strong> ${tr.pickup} (${tr.pickupTime})</div>
+                        <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 8px;">🏁 <strong>Destino:</strong> ${tr.destination} (${tr.duration})</div>
+                        <div style="font-size: 0.78rem; background: #FAF9F6; padding: 6px 10px; border-radius: 8px; margin-bottom: 10px;">💶 <strong>Tarifa:</strong> ${tr.price} (${tr.payment})</div>
+                        <a href="tel:${tr.supportPhone.replace(/[^0-9+]/g, '')}" class="card-action-btn"><span style="font-size: 1rem;">📞</span> Llamar Asistencia 24h (${tr.supportPhone})</a>
+                    `;
+                    tabFlights.appendChild(trCard);
+                });
+
+                // Trains (Renfe AVE / Alta Velocidad)
+                (trip.trains || []).forEach(train => {
+                    const tCard = document.createElement('div');
+                    tCard.className = 'flight-card';
+                    tCard.style.borderLeft = '4px solid #7C3AED';
+                    tCard.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <span style="font-size: 0.68rem; font-weight: 800; background: #EDE9FE; color: #6D28D9; padding: 2px 8px; border-radius: 6px;">🚄 ${train.operator} · ${train.trainType || 'ALTA VELOCIDAD'}</span>
+                            <span style="font-size: 0.74rem; font-weight: 800; color: #6D28D9;">Loc: ${train.pnr}</span>
+                        </div>
+                        <div style="font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">${train.trainNumber} · ${train.route}</div>
+                        <div style="background: #FAF9F6; border: 1px solid var(--border-subtle); border-radius: 10px; padding: 12px; margin-bottom: 8px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-size: 1.25rem; font-weight: 800; color: var(--text-main);">${train.from}</div>
+                                    <div style="font-size: 0.72rem; color: var(--text-muted);">${train.fromStation}</div>
+                                    <div style="font-size: 0.85rem; font-weight: 700; color: var(--gold-dark); margin-top: 2px;">${train.depTime}</div>
+                                </div>
+                                <div style="text-align: center; color: var(--text-muted); font-size: 0.72rem; padding: 0 8px;">
+                                    <div style="font-weight: 700; color: #6D28D9;">⏱️ ${train.duration}</div>
+                                    <div style="letter-spacing: 2px; color: var(--gold-dark);">────────➔</div>
+                                    <div style="font-size: 0.68rem;">${train.class}</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 1.25rem; font-weight: 800; color: var(--text-main);">${train.to}</div>
+                                    <div style="font-size: 0.72rem; color: var(--text-muted);">${train.toStation}</div>
+                                    <div style="font-size: 0.85rem; font-weight: 700; color: var(--gold-dark); margin-top: 2px;">${train.arrTime}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">💺 <strong>Asientos:</strong> ${train.seats}</div>
+                        ${train.combinadoCercanias ? `<div style="font-size: 0.74rem; background: #F3F4F6; padding: 4px 8px; border-radius: 6px; margin-bottom: 6px;">🎟️ <strong>CombinadoCercanías:</strong> ${train.combinadoCercanias}</div>` : ''}
+                        <div style="font-size: 0.76rem; background: var(--gold-light); padding: 6px 10px; border-radius: 8px; color: var(--text-main); margin-bottom: 6px;">✨ ${train.perks}</div>
+                        <div style="font-size: 0.72rem; color: var(--text-muted);">💶 ${train.cost} · ${train.notes || ''}</div>
+                    `;
+                    tabFlights.appendChild(tCard);
+                });
+
+                // Flights
+                (trip.flights || []).forEach(fl => {
+                    const card = document.createElement('div');
+                    card.className = 'flight-card';
+
+                    let legsContent = '';
+                    if (fl.legs) {
+                        fl.legs.forEach(leg => {
+                            if (leg.isLayover) {
+                                legsContent += `
+                                    <div style="background: var(--gold-light); border: 1px dashed var(--gold-border); border-radius: 10px; padding: 8px 12px; margin: 10px 0; font-size: 0.74rem;">
+                                        <strong>⏳ ${leg.title}:</strong> ${leg.duration} · ${leg.details}
+                                    </div>
+                                `;
+                            } else {
+                                legsContent += `
+                                    <div style="background: #FAF9F6; border: 1px solid var(--border-subtle); border-radius: 10px; padding: 12px; margin-bottom: 8px;">
+                                        <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 0.9rem; color: #0078D2; margin-bottom: 6px;">
+                                            <span>${leg.flightNum}</span>
+                                            <span style="font-size: 0.74rem; color: var(--text-muted);">${leg.duration || ''}</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                            <div>
+                                                <div style="font-size: 1.3rem; font-weight: 800;">${leg.from}</div>
+                                                <div style="font-size: 0.72rem; color: var(--text-muted);">${leg.fromCity || ''}</div>
+                                                <div style="font-size: 0.76rem; font-weight: 700;">${leg.dep}</div>
+                                            </div>
+                                            <span style="font-size: 1.2rem; color: var(--gold);">➔</span>
+                                            <div style="text-align: right;">
+                                                <div style="font-size: 1.3rem; font-weight: 800;">${leg.to}</div>
+                                                <div style="font-size: 0.72rem; color: var(--text-muted);">${leg.toCity || ''}</div>
+                                                <div style="font-size: 0.76rem; font-weight: 700;">${leg.arr}</div>
+                                            </div>
+                                        </div>
+                                        <div style="font-size: 0.72rem; color: var(--text-muted); border-top: 1px dashed var(--border-subtle); padding-top: 4px;">
+                                            💺 Asientos: <strong>${leg.seats || 'Asignados'}</strong>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        });
+                    } else {
+                        legsContent = `
+                            <div style="background: #FAF9F6; border: 1px solid var(--border-subtle); border-radius: 10px; padding: 12px; margin-bottom: 8px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <div style="font-size: 1.3rem; font-weight: 800;">${fl.from} ➔ ${fl.to}</div>
+                                    <span style="font-size: 0.76rem; font-weight: 700; color: var(--gold-dark);">${fl.depTime ? fl.depTime + ' ➔ ' + fl.arrTime : fl.date}</span>
+                                </div>
+                                <div style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 4px;">${fl.fromName || ''} ➔ ${fl.toName || ''}</div>
+                                ${fl.seats ? `<div style="font-size: 0.74rem; color: var(--text-main); margin-bottom: 4px;">💺 Asientos: <strong>${fl.seats}</strong></div>` : ''}
+                                ${fl.perks ? `<div style="font-size: 0.72rem; color: var(--gold-dark); margin-bottom: 4px;">✨ ${fl.perks}</div>` : ''}
+                                ${fl.notes ? `<div style="font-size: 0.72rem; color: var(--text-muted); border-top: 1px dashed var(--border-subtle); padding-top: 4px;">${fl.notes}</div>` : ''}
+                            </div>
+                        `;
+                    }
+
+                    card.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span class="badge-status upcoming" style="background: rgba(0, 120, 210, 0.1); color: #0078D2; border: none;">✈️ ${fl.airline || fl.carrier}</span>
+                            <span style="font-size: 0.74rem; font-weight: 800; color: var(--gold-dark);">${fl.pnr ? 'Loc: ' + fl.pnr : ''}</span>
+                        </div>
+                        <div style="font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">${fl.segment || fl.flightNumber}</div>
+                        ${legsContent}
+                    `;
+                    tabFlights.appendChild(card);
+                });
+            }
+
+            // Tab 3: Lodgings
+            const tabLodgings = document.getElementById('detail-tab-lodgings');
+            if (tabLodgings) {
+                tabLodgings.innerHTML = '';
+                (trip.lodgings || []).forEach(lodg => {
+                    const card = document.createElement('div');
+                    card.className = 'hotel-card';
+                    card.style.overflow = 'hidden';
+                    const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lodg.mapQuery || lodg.address)}`;
+                    const imgHtml = lodg.image ? `
+                        <div style="position: relative; height: 130px; width: calc(100% + 32px); margin: -16px -16px 12px -16px; overflow: hidden;">
+                            <img src="${lodg.image}" alt="${lodg.name}" style="width: 100%; height: 100%; object-fit: cover;">
+                            <div style="position: absolute; top: 10px; right: 10px; background: #C9A84C; color: #1F1B18; font-size: 0.65rem; font-weight: 800; padding: 3px 8px; border-radius: 20px;">CONFIRMADO</div>
+                        </div>
+                    ` : '';
+
+                    card.innerHTML = `
+                        ${imgHtml}
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <span style="font-size: 0.72rem; font-weight: 800; color: var(--gold-dark);">🏨 ${lodg.city || trip.country}</span>
+                            <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted);">${lodg.conf}</span>
+                        </div>
+                        <div style="font-family: 'Cormorant Garamond', serif; font-size: 1.35rem; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">${lodg.name}</div>
+                        <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 6px;">📍 ${lodg.address}</div>
+                        <div style="font-size: 0.74rem; background: var(--gold-light); padding: 5px 10px; border-radius: 8px; margin-bottom: 8px;">✨ ${lodg.cost}</div>
+                        <div style="display: flex; gap: 8px;">
+                            ${lodg.phone ? `<a href="tel:${lodg.phone.replace(/[^0-9+]/g, '')}" class="card-action-btn" style="flex: 1;"><span style="font-size: 0.9rem;">📞</span> Llamar</a>` : ''}
+                            <a href="${mapUrl}" target="_blank" class="card-action-btn" style="flex: 1;"><span style="font-size: 0.9rem;">📍</span> Ver en Maps</a>
+                        </div>
+                    `;
+                    tabLodgings.appendChild(card);
+                });
+            }
+
+            // Tab 4: Smart Packing for this Trip
+            const tabPacking = document.getElementById('detail-tab-packing');
+            if (tabPacking) {
+                tabPacking.innerHTML = '';
+                renderSmartPackingComponent(tabPacking, trip);
+            }
+        }
+
+        // Smart Packing Engine (Traveler Personalized & Activity Aware)
+        let currentPackingTraveler = 'milton'; // 'milton' | 'aileen' | 'shared'
+
+        const TRAVELER_PACKING_SPECS = {
+            milton: {
+                name: "Milton Cruz",
+                icon: "👔",
+                categories: [
+                    {
+                        name: "Checklist Viaje Original (Milton Cruz)",
+                        icon: "📋",
+                        badge: "Lista Original",
+                        items: [
+                            { id: "m_camisas_larga", text: "Camisas manga larga", sub: "De vestir y casual" },
+                            { id: "m_camisas_obscure", text: "Camisas de traje obscure", sub: "Para noches de gala y cenas de autor" },
+                            { id: "m_polos", text: "Polos", sub: "Uso diario y paseos" },
+                            { id: "m_tshirt", text: "T-shirt", sub: "Capas base de algodón" },
+                            { id: "m_mahones", text: "Mahones", sub: "Casual chic para desplazamientos" },
+                            { id: "m_pantalones", text: "Pantalones", sub: "Ligeros de vestir / Chinos" },
+                            { id: "m_bermuda", text: "Bermuda", sub: "Clima cálido en el sur (Sotogrande)" },
+                            { id: "m_chaqueta", text: "Chaqueta", sub: "🍽️ Blazer estructurado para cenas y restaurantes" },
+                            { id: "m_jacket_liviano", text: "Jacket Liviano", sub: "🌙 Ideal para las noches frescas de Madrid (55°F)" },
+                            { id: "m_jacket_pesado", text: "Jacket pesado", sub: "🌙 Noches de 55°F en Madrid / Llevar si prefiere mayor abrigo", badge: "Clima 55°F" },
+                            { id: "m_fleece", text: "Fleece", sub: "Confort en cabina presurizada de vuelo nocturno" },
+                            { id: "m_correa_diario", text: "Correa diario", sub: "Uso casual" },
+                            { id: "m_correa_salir", text: "Correa salir", sub: "Piel formal para combinar con calzado de noche" },
+                            { id: "m_pantalon_pajama", text: "Pantalon pajama", sub: "Descanso" },
+                            { id: "m_camisa_pajama", text: "Camisa pajama", sub: "Descanso" },
+                            { id: "m_calsoncillos", text: "Calsoncillos", sub: "Mudas suficientes de algodón" },
+                            { id: "m_medias_salir", text: "Medias salir", sub: "Para calzado formal" },
+                            { id: "m_medias_diario", text: "Medias diario", sub: "Uso diario" },
+                            { id: "m_medias_tenis", text: "Medias tenis", sub: "Deportivas y caminatas" },
+                            { id: "m_ropa_ejercicio", text: "Ropa ejercicio", sub: "Gimnasio y entrenamientos" },
+                            { id: "m_traje_bano", text: "Traje de baño", sub: "🏊 Piscina y spa (controlado por toggle de Playa)", tag: "beach" },
+                            { id: "m_zapatos_salir", text: "Zapatos de salir", sub: "Mocasines / Piel formal" },
+                            { id: "m_zapatos_diario", text: "Zapatos diario", sub: "Suela de goma para adoquines del Casco Antiguo" },
+                            { id: "m_tenis", text: "Tenis", sub: "Deportivos / Caminatas largas" },
+                            { id: "m_cepillo_dientes", text: "Cepillo dientes", sub: "Aseo dental" },
+                            { id: "m_cepillo_pelo", text: "Cepillo pelo", sub: "Cuidado capilar" },
+                            { id: "m_chapstik", text: "Chapstik", sub: "Bálsamo labial protector" },
+                            { id: "m_corta_unas", text: "Corta uñas", sub: "Cuidado personal" },
+                            { id: "m_dental_floss", text: "Dental floss", sub: "Hilo dental" },
+                            { id: "m_desodorante", text: "Desodorante", sub: "Aseo personal" },
+                            { id: "m_pasta_dientes", text: "Pasta dientes", sub: "Aseo dental" },
+                            { id: "m_perfume", text: "Perfume", sub: "Fragrancia de viaje" },
+                            { id: "m_razuradora", text: "Razuradora", sub: "Afeitado y cuchillas" },
+                            { id: "m_shampoo", text: "Shampoo", sub: "Cuidado capilar" },
+                            { id: "m_conditioner", text: "Conditioner", sub: "Acondicionador capilar" },
+                            { id: "m_medicinas", text: "Medicinas", sub: "Botiquín y recetas personales para el viaje" },
+                            { id: "m_cargador_celular", text: "Cargador Celular", sub: "Cable y cargador móvil" },
+                            { id: "m_cargador_reloj", text: "Cargador reloj", sub: "Cargador Apple Watch / Smartwatch" },
+                            { id: "m_prendas", text: "Prendas", sub: "Reloj de vestir, gemelos y accesorios personales" }
+                        ]
+                    },
+                    {
+                        name: "Equipamiento & Indumentaria de Golf",
+                        icon: "⛳",
+                        tag: "golf",
+                        badge: "Golf Activo",
+                        items: [
+                            { id: "m_golf_polo", text: "Polos técnicos de golf con cuello", sub: "Código de vestimenta exigido en Almenara Golf Club", tag: "golf" },
+                            { id: "m_golf_pants", text: "Pantalones / Bermudas técnicas de golf", sub: "Tejido elástico transpirable para campo", tag: "golf" },
+                            { id: "m_golf_socks", text: "Medias de golf técnicas", sub: "Acolchado anti-rozaduras en talón y planta", tag: "golf" },
+                            { id: "m_golf_belt", text: "Correa de golf deportiva", sub: "Ajuste elástico para el swing", tag: "golf" },
+                            { id: "m_golf_windbreaker", text: "Chaqueta cortavientos / Chaleco ligero de golf", sub: "Para la brisa matutina en el campo", tag: "golf" },
+                            { id: "m_golf_shoes", text: "Zapatos de golf (Spikeless / Soft spikes)", sub: "Suela con agarre especial sin clavos metálicos", tag: "golf" },
+                            { id: "m_golf_gloves", text: "Guantes de golf (Piel Cabretta)", sub: "Guante principal + repuesto nuevo en empaque", tag: "golf" },
+                            { id: "m_golf_cap", text: "Gorra deportiva o visera de golf", sub: "Protección solar obligatoria para 18 hoyos", tag: "golf" },
+                            { id: "m_golf_balls", text: "Bolas de golf (Titleist Pro V1 o similar)", sub: "1 docena / bolas de juego para Almenara", tag: "golf" },
+                            { id: "m_golf_tees", text: "Tees de golf (madera o bambú)", sub: "Surtido de alturas para Driver y hierros", tag: "golf" },
+                            { id: "m_golf_divot_marker", text: "Arreglapiques (Divot tool) & Marcadores de bola", sub: "Reparador de piques y marcador para greens", tag: "golf" },
+                            { id: "m_golf_towel", text: "Toalla de microfibra de golf", sub: "Para limpieza de varillas, palos y bolas", tag: "golf" },
+                            { id: "m_golf_rangefinder", text: "Telémetro láser (Rangefinder) o Reloj GPS de golf", sub: "Medición exacta de distancias (+ cargador)", tag: "golf" },
+                            { id: "m_golf_sunscreen", text: "Protector solar deportivo resistente al sudor (SPF 50+)", sub: "Protección de alta duración para 4-5h de juego", tag: "golf" },
+                            { id: "m_golf_travel_bag", text: "Funda de viaje acolchada para palos", sub: "Protección en bodega o coordinar alquiler en club", tag: "golf" },
+                            { id: "m_golf_thermos", text: "Botella térmica / Termo de agua para la ronda", sub: "Hidratación continua durante los 18 hoyos", tag: "golf" }
+                        ]
+                    },
+                    {
+                        name: "Indumentaria & Accesorios de Playa / Piscina",
+                        icon: "🏖️",
+                        tag: "beach",
+                        badge: "Playa Activa",
+                        items: [
+                            { id: "m_beach_swim_extra", text: "Traje de baño adicional de cambio", sub: "Para rotar tras piscina infinita o solárium", tag: "beach" },
+                            { id: "m_beach_linen_shirt", text: "Camisas de lino fresco / Polos de verano", sub: "Para almuerzos en el Beach Club o terraza", tag: "beach" },
+                            { id: "m_beach_slides", text: "Sandalias de playa / Chanclas impermeables", sub: "Resistentes al agua para piscina y arena", tag: "beach" },
+                            { id: "m_beach_hat", text: "Sombrero de sol / Panamá", sub: "Protección solar distinguida", tag: "beach" },
+                            { id: "m_beach_sunglasses", text: "Gafas de sol polarizadas UV400", sub: "Anti-reflejo para agua y sol andaluz", tag: "beach" },
+                            { id: "m_beach_bag", text: "Bolsa de playa / Mochila impermeable", sub: "Para llevar toalla, cremas y móvil", tag: "beach" },
+                            { id: "m_beach_phone_pouch", text: "Funda impermeable o estanca para smartphone", sub: "Protección contra salpicaduras de agua y arena", tag: "beach" },
+                            { id: "m_beach_sunscreen", text: "Protector solar corporal resistente al agua (SPF 50+)", sub: "Protección de amplio espectro para Costa del Sol", tag: "beach" },
+                            { id: "m_beach_aftersun", text: "Gel hidratante post-solar (After-sun / Aloe Vera)", sub: "Alivio y regeneración tras el sol", tag: "beach" }
+                        ]
+                    },
+                    {
+                        name: "Sugerencias Complementarias (Cenas Michelin & Confort)",
+                        icon: "✨",
+                        badge: "Sugerido",
+                        items: [
+                            { id: "m_panuelo_bolsillo", text: "Pañuelo de bolsillo o corbata de seda", sub: "Para cena de gala en Amós 3★ Michelin / Rosewood Villa Magna" },
+                            { id: "m_flight_socks", text: "Calcetines de descanso / compresión suave", sub: "Para vuelo transatlántico en Business de 8h 35m" },
+                            { id: "m_airpods", text: "Auriculares con cancelación activa de ruido", sub: "Para descanso en vuelos y tren AVE" },
+                            { id: "m_airtag", text: "Apple AirTag en maleta facturada y maletín", sub: "Rastreo de equipaje en tiempo real" }
+                        ]
+                    }
+                ]
+            },
+            aileen: {
+                name: "Aileen Rosso",
+                icon: "👗",
+                categories: [
+                    {
+                        name: "Checklist Viaje Original (Aileen Rosso)",
+                        icon: "📋",
+                        badge: "Lista Original",
+                        items: [
+                            { id: "a_camisas_larga", text: "Camisas manga larga", sub: "Lino y vestir para cenas y visitas" },
+                            { id: "a_camisas_salir", text: "Camisas de Salir", sub: "Blusas elegantes de seda o satén para cenas" },
+                            { id: "a_camisas_diario", text: "Camisas de Diario", sub: "Tejidos frescos y transpirables" },
+                            { id: "a_mahones", text: "Mahones", sub: "Jeans de corte impecable para tours y traslados" },
+                            { id: "a_pantalones", text: "Pantalones", sub: "Pantalones de vestir / lino para el sur" },
+                            { id: "a_abrigo_pesado", text: "Abrigo pesado", sub: "🌙 Noches de 55°F en Madrid / Opcional según preferencia", badge: "Clima 55°F" },
+                            { id: "a_abrigo_liviano", text: "Abrigo Liviano", sub: "Trench coat liviano / chaqueta de entretiempo" },
+                            { id: "a_fleece", text: "Fleece", sub: "Cárdigan fino o abrigo suave para el avión" },
+                            { id: "a_panuelo", text: "Pañuelo", sub: "Pashmina de seda para brisa, iglesias y aire acondicionado" },
+                            { id: "a_bermuda", text: "Bermuda", sub: "☀️ Shorts elegantes para Sotogrande y paseos" },
+                            { id: "a_correa", text: "Correa", sub: "Accesorio de diario" },
+                            { id: "a_pajama", text: "Pajama", sub: "Pajama fresca de descanso" },
+                            { id: "a_panties", text: "Panties", sub: "Mudas suficientes de algodón o microfibra" },
+                            { id: "a_brazier", text: "Brazier", sub: "Diarios, strapless y de vestir" },
+                            { id: "a_medias_diario", text: "Medias diario", sub: "Uso diario" },
+                            { id: "a_medias_tenis", text: "Medias tenis", sub: "Para calzado deportivo y caminatas" },
+                            { id: "a_ropa_ejercicio", text: "Ropa ejercicio", sub: "Gym y entrenamientos" },
+                            { id: "a_brazier_ejercicios", text: "Brazier ejercicios", sub: "Top deportivo de soporte" },
+                            { id: "a_traje_bano", text: "Traje de baño", sub: "🏊 Piscina y spa (controlado por toggle de Playa)", tag: "beach" },
+                            { id: "a_zapatos_salir", text: "Zapatos de salir", sub: "Tacón cómodo o cuña elegante" },
+                            { id: "a_zapatos_walking", text: "Zapatos diario walking", sub: "Suela plana indispensable para adoquines de Sevilla" },
+                            { id: "a_tenis", text: "Tenis", sub: "Caminatas largas por museos y parques" },
+                            { id: "a_cepillo_dientes", text: "Cepillo dientes", sub: "Aseo dental" },
+                            { id: "a_cepillo_pelo", text: "Cepillo pelo", sub: "Peinado y cepillado" },
+                            { id: "a_chapstik", text: "Chapstik", sub: "Bálsamo labial hidratante" },
+                            { id: "a_corta_unas", text: "Corta uñas", sub: "Corta uñas y lima de viaje" },
+                            { id: "a_dental_floss", text: "Dental floss", sub: "Hilo dental" },
+                            { id: "a_desodorante", text: "Desodorante", sub: "Aseo personal" },
+                            { id: "a_pasta_dientes", text: "Pasta dientes", sub: "Aseo dental" },
+                            { id: "a_perfume", text: "Perfume", sub: "Fragrancia de viaje" },
+                            { id: "a_razuradora", text: "Razuradora", sub: "Rasuradora femenina" },
+                            { id: "a_shampoo", text: "Shampoo", sub: "Cuidado capilar" },
+                            { id: "a_plancha_pelo", text: "Plancha de Pelo", sub: "⚡ Verificar voltaje 110-240V para red de 230V de España", badge: "230V España" },
+                            { id: "a_medicinas", text: "Medicinas", sub: "Botiquín personal y analgésicos" },
+                            { id: "a_cargador_celular", text: "Cargador Celular", sub: "Cable y cargador móvil" },
+                            { id: "a_cargador_reloj", text: "Cargador reloj", sub: "Cargador Smartwatch" },
+                            { id: "a_prendas", text: "Prendas", sub: "Joyero de viaje seguro en bolso de mano" },
+                            { id: "a_voltage_converter", text: "Voltage converter", sub: "Adaptador europeo Tipo C/F (230V / 50Hz)", badge: "Enchufe EU" }
+                        ]
+                    },
+                    {
+                        name: "Acompañamiento / Indumentaria de Golf",
+                        icon: "⛳",
+                        tag: "golf",
+                        badge: "Golf Activo",
+                        items: [
+                            { id: "a_golf_polo", text: "Polo de golf / Top técnico con cuello", sub: "Etiqueta exigida en casa club y campo de golf", tag: "golf" },
+                            { id: "a_golf_skort", text: "Pantalones / Shorts / Falda-pantalón de golf", sub: "Tejido técnico elástico y transpirable", tag: "golf" },
+                            { id: "a_golf_shoes", text: "Zapatos de golf o tenis de suela plana", sub: "Aptos para caminar sobre césped de campo", tag: "golf" },
+                            { id: "a_golf_visor", text: "Visera o gorra deportiva de golf", sub: "Protección solar chic para 18 hoyos", tag: "golf" },
+                            { id: "a_golf_sunglasses", text: "Gafas de sol con alta protección UV", sub: "Descanso visual en campo abierto", tag: "golf" },
+                            { id: "a_golf_sunscreen", text: "Protector solar facial & corporal deportivo SPF 50+", sub: "Resistente a la exposición continua al aire libre", tag: "golf" }
+                        ]
+                    },
+                    {
+                        name: "Indumentaria & Accesorios de Playa / Piscina",
+                        icon: "🏖️",
+                        tag: "beach",
+                        badge: "Playa Activa",
+                        items: [
+                            { id: "a_beach_swim_extra", text: "Traje de baño adicional de cambio", sub: "Para alternar en spa, solárium y piscinas", tag: "beach" },
+                            { id: "a_beach_coverup", text: "Salida de baño / Kimono / Pareo elegante", sub: "Para tránsito del spa a la piscina o solárium", tag: "beach" },
+                            { id: "a_beach_sandals", text: "Sandalias de playa / Chanclas de diseño impermeables", sub: "Calzado para áreas húmedas y piscina", tag: "beach" },
+                            { id: "a_beach_hat", text: "Sombrero de sol / Pamina de ala ancha", sub: "Protección solar chic para la Costa del Sol", tag: "beach" },
+                            { id: "a_beach_tote", text: "Bolso de playa / Capazo o Tote bag amplio", sub: "Para llevar toalla, libros y cosmética", tag: "beach" },
+                            { id: "a_beach_phone_pouch", text: "Funda impermeable o estanca para smartphone", sub: "Protección total contra agua y arena", tag: "beach" },
+                            { id: "a_beach_sunscreen", text: "Protector solar corporal resistente al agua SPF 50+", sub: "Protección de amplio espectro", tag: "beach" },
+                            { id: "a_beach_aftersun", text: "Loción o gel post-solar calmante (After-sun)", sub: "Hidratación profunda post-bronceado", tag: "beach" }
+                        ]
+                    },
+                    {
+                        name: "Sugerencias Complementarias (Cenas VIP & Belleza)",
+                        icon: "✨",
+                        badge: "Sugerido",
+                        items: [
+                            { id: "a_vestidos_dia", text: "Vestidos midi vaporosos de lino para el día", sub: "Frescura distinguida para Sevilla y bodegas" },
+                            { id: "a_vestidos_noche", text: "Vestidos de cóctel / noche de gala", sub: "Para Rosewood Villa Magna y Hotel Colón" },
+                            { id: "a_bolso_crossbody", text: "Bolso cruzado seguro (Crossbody) y Clutch de noche", sub: "Seguridad en tours y elegancia en cenas" },
+                            { id: "a_protector_facial", text: "Protector solar facial antiedad SPF 50+ de amplio espectro", sub: "Protección diaria antienvejecimiento indispensable" },
+                            { id: "a_crema_hidratante", text: "Sérum facial ultra-hidratante & Crema intensiva", sub: "Recuperación cutánea tras vuelo y clima seco" },
+                            { id: "a_desmaquillante", text: "Toallitas desmaquillantes / Agua micelar viaje", sub: "Limpieza facial nocturna" },
+                            { id: "a_airtag", text: "Apple AirTag en cartera de mano y maleta", sub: "Localización precisa en iPhone" }
+                        ]
+                    }
+                ]
+            },
+            shared: {
+                name: "Equipaje Compartido",
+                icon: "🧳",
+                categories: [
+                    {
+                        name: "Documentos, Finanzas & Fidelización VIP",
+                        icon: "🛂",
+                        badge: "VIP",
+                        items: [
+                            { id: "s_pasaportes", text: "Pasaportes vigentes (Milton & Aileen)", sub: "Mínimo 6 meses de vigencia y copias en la nube" },
+                            { id: "s_amex", text: "Tarjeta American Express Platinum", sub: "Acceso a Centurion Lounges, Delta Sky Club y beneficios FHR" },
+                            { id: "s_loyalty", text: "Tarjetas de fidelización digitales (Delta Platinum, Mosaic 3, Iberia Plus)", sub: "Prioridad de equipaje y embarque" },
+                            { id: "s_ave_tickets", text: "Billetes de tren Renfe AVE Confort (Localizador 73MWSR)", sub: "Coche 1, Asientos 9B y 9C (25 Sep)" },
+                            { id: "s_hotel_vmagna", text: "Confirmación Rosewood Villa Magna Madrid (32298SG208578)", sub: "Paseo de la Castellana 22, Barrio de Salamanca" }
+                        ]
+                    },
+                    {
+                        name: "Conectividad, Carga & Dispositivos",
+                        icon: "⚡",
+                        badge: "Tech",
+                        items: [
+                            { id: "s_adaptadores", text: "2x Adaptadores de enchufe europeo (Tipo C/F)", sub: "Para enchufes redondos de pared en España" },
+                            { id: "s_cargador_gan", text: "Cargador de pared GaN 65W multidispositivo (USB-C/A)", sub: "Carga simultánea de iPhones, Apple Watch y iPads" },
+                            { id: "s_cables", text: "Cables de carga rápida largos (USB-C y Lightning 2m)", sub: "Para habitaciones de hotel y transporte" },
+                            { id: "s_powerbank", text: "Batería externa portátil (PowerBank 10,000 mAh)", sub: "🔋 Llevar siempre en equipaje de mano (prohibido en bodega)" },
+                            { id: "s_audio_adapter", text: "Adaptador de audio para cabina de avión (Jack 3.5mm o Bluetooth)", sub: "Para conectar auriculares al sistema de entretenimiento de vuelo" }
+                        ]
+                    },
+                    {
+                        name: "Botiquín de Viaje & Confort en Ruta",
+                        icon: "💊",
+                        badge: "Salud",
+                        items: [
+                            { id: "s_compeed", text: "Curitas hidrocoloides para ampollas (tipo Compeed)", sub: "Salvavidas para caminatas en adoquines de Sevilla y Madrid" },
+                            { id: "s_digestivos", text: "Antiácidos / Digestivos", sub: "Para degustar la gastronomía española sin molestias" },
+                            { id: "s_analgesicos", text: "Analgésicos (Ibuprofeno, Paracetamol)", sub: "Alivio general para dolores o fatiga" },
+                            { id: "s_gotas_ojos", text: "Gotas oculares lubricantes (Lágrimas artificiales)", sub: "Para evitar sequedad ocular en vuelos largos" },
+                            { id: "s_toallitas", text: "Toallitas desinfectantes de viaje", sub: "Para superficies de avión y tren" }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        function getTravelerPackingStats(tripId, travelerKey) {
+            const spec = TRAVELER_PACKING_SPECS[travelerKey];
+            if (!spec) return { total: 0, checked: 0, pct: 0 };
+            const trip = (appData.trips || []).find(t => t.id === tripId);
+            const acts = trip?.activitiesConfig || { golf: true, beach: true };
+            const storageKey = `packing_checked_${tripId}`;
+            const checkedState = JSON.parse(localStorage.getItem(storageKey) || '{}');
+            let total = 0, checked = 0;
+
+            spec.categories.forEach(cat => {
+                if (cat.tag === 'golf' && !acts.golf) return;
+                if (cat.tag === 'beach' && !acts.beach) return;
+                cat.items.forEach(item => {
+                    if (item.tag === 'golf' && !acts.golf) return;
+                    if (item.tag === 'beach' && !acts.beach) return;
+                    total++;
+                    if (checkedState[item.id]) checked++;
+                });
+            });
+
+            const custom = (trip?.customPackingList || []).filter(c => c.traveler === travelerKey || (!c.traveler && travelerKey === 'shared'));
+            custom.forEach(c => {
+                total++;
+                if (checkedState[c.id]) checked++;
+            });
+            const pct = total > 0 ? Math.round((checked / total) * 100) : 0;
+            return { total, checked, pct };
+        }
+
+        function switchPackingTraveler(travelerKey, tripId) {
+            currentPackingTraveler = travelerKey;
+            refreshAllPackingComponents(tripId);
+        }
+
+        function toggleTripActivity(tripId, activityKey, isChecked) {
+            const trip = (appData.trips || []).find(t => t.id === tripId);
+            if (trip) {
+                if (!trip.activitiesConfig) trip.activitiesConfig = { golf: true, beach: true };
+                trip.activitiesConfig[activityKey] = isChecked;
+                saveState();
+                refreshAllPackingComponents(tripId);
+                showToast(`${activityKey === 'golf' ? '⛳ Golf' : '🏖️ Playa & Piscina'} ${isChecked ? 'activado' : 'desactivado'}`);
+            }
+        }
+
+        function refreshAllPackingComponents(tripId) {
+            const trip = (appData.trips || []).find(t => t.id === tripId) || (appData.trips || [])[0];
+            if (!trip) return;
+            const detailHost = document.getElementById('detail-tab-packing');
+            if (detailHost && (detailHost.innerHTML.trim() !== '' || document.getElementById('view-detail')?.classList.contains('active'))) {
+                renderSmartPackingComponent(detailHost, trip);
+            }
+            const globalHost = document.getElementById('global-packing-matrix-host');
+            if (globalHost) {
+                renderSmartPackingComponent(globalHost, trip);
+            }
+        }
+
+        function renderSmartPackingComponent(container, trip) {
+            const config = trip.baggageConfig || { mode: 'checked', laundryAvailable: true };
+            const climate = trip.climate || { tempLowF: 55, tempHighF: 84 };
+            const days = trip.durationDays || 12;
+            const acts = trip.activitiesConfig || { golf: true, beach: true };
+
+            const mStats = getTravelerPackingStats(trip.id, 'milton');
+            const aStats = getTravelerPackingStats(trip.id, 'aileen');
+            const sStats = getTravelerPackingStats(trip.id, 'shared');
+            const currentStats = currentPackingTraveler === 'milton' ? mStats : (currentPackingTraveler === 'aileen' ? aStats : sStats);
+
+            container.innerHTML = `
+                <!-- Activity Toggles: Golf & Playa/Piscina -->
+                <div class="activity-toggles-bar">
+                    <div class="activity-toggle-card ${acts.golf ? 'active' : ''}">
+                        <div class="toggle-info">
+                            <span class="toggle-icon">⛳</span>
+                            <div>
+                                <div class="toggle-label">¿Jugarás Golf?</div>
+                                <div class="toggle-desc">${acts.golf ? 'Indumentaria técnica, calzado, palos y accesorios activados' : 'Desactivado (sin equipo de golf)'}</div>
+                            </div>
+                        </div>
+                        <label class="ios-switch">
+                            <input type="checkbox" ${acts.golf ? 'checked' : ''} onchange="toggleTripActivity('${trip.id}', 'golf', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="activity-toggle-card ${acts.beach ? 'active' : ''}">
+                        <div class="toggle-info">
+                            <span class="toggle-icon">🏖️</span>
+                            <div>
+                                <div class="toggle-label">¿Playa o Piscina?</div>
+                                <div class="toggle-desc">${acts.beach ? 'Trajes de baño, salidas, sandalias y protección solar activados' : 'Desactivado (sin ropa de playa)'}</div>
+                            </div>
+                        </div>
+                        <label class="ios-switch">
+                            <input type="checkbox" ${acts.beach ? 'checked' : ''} onchange="toggleTripActivity('${trip.id}', 'beach', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Traveler Selector Tabs -->
+                <div class="traveler-selector">
+                    <button class="traveler-selector-btn ${currentPackingTraveler === 'milton' ? 'active' : ''}" onclick="switchPackingTraveler('milton', '${trip.id}')">
+                        👔 Milton <span class="badge-count">${mStats.checked}/${mStats.total}</span>
+                    </button>
+                    <button class="traveler-selector-btn ${currentPackingTraveler === 'aileen' ? 'active' : ''}" onclick="switchPackingTraveler('aileen', '${trip.id}')">
+                        👗 Aileen <span class="badge-count">${aStats.checked}/${aStats.total}</span>
+                    </button>
+                    <button class="traveler-selector-btn ${currentPackingTraveler === 'shared' ? 'active' : ''}" onclick="switchPackingTraveler('shared', '${trip.id}')">
+                        🧳 Compartido <span class="badge-count">${sStats.checked}/${sStats.total}</span>
+                    </button>
+                </div>
+
+                <!-- Weather Advisory Card -->
+                <div class="weather-advisory-box">
+                    <div style="font-weight: 800; display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                        <span>🌤️ Previsión Climática · España (18–29 Sep):</span>
+                        <span style="font-size: 0.7rem; background: #DCFCE7; color: #15803D; padding: 2px 8px; border-radius: 12px; font-weight: 700;">12 Días</span>
+                    </div>
+                    <div style="margin-bottom: 3px;">• <strong>Sotogrande (Costa del Sol):</strong> 64°F a 79°F · Soleado mediterráneo (golf en Almenara, spa y piscinas).</div>
+                    <div style="margin-bottom: 3px;">• <strong>Sevilla:</strong> 64°F a 84°F · Caluroso y seco de día, noches cálidas (caminatas monumentales por adoquines).</div>
+                    <div style="margin-bottom: 6px;">• <strong>Madrid:</strong> 55°F a 75°F · Noches frescas (55°F) y tardes templadas (cenas elegantes en Rosewood Villa Magna).</div>
+                    <div style="padding-top: 6px; border-top: 1px dashed #86EFAC; font-size: 0.74rem; color: #14532D;">
+                        📋 <strong>Checklist Viaje integrado al 100%:</strong> Contiene todas tus prendas y accesorios originales. Para las noches frescas de Madrid (55°F), tu <em>Jacket pesado / Abrigo pesado</em> está disponible y marcado para llevar según tu preferencia. Activa o desactiva Golf y Playa con los botones superiores para adaptar el equipaje dinámicamente.
+                    </div>
+                </div>
+
+                <!-- Luggage Config & Progress Card -->
+                <div class="packing-progress-wrapper">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-main);">
+                            Progreso de ${TRAVELER_PACKING_SPECS[currentPackingTraveler].name}
+                        </span>
+                        <span style="font-size: 0.8rem; font-weight: 800; color: var(--gold-dark);">
+                            ${currentStats.checked} de ${currentStats.total} (${currentStats.pct}%)
+                        </span>
+                    </div>
+                    <div class="packing-progress-bar-bg">
+                        <div class="packing-progress-bar-fill" style="width: ${currentStats.pct}%;"></div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border-subtle); font-size: 0.74rem;">
+                        <span style="color: var(--text-muted);">
+                            🧳 Maleta Facturada Business (2x gratis c/u) · 🧺 Lavandería en hoteles 5★
+                        </span>
+                        <button onclick="resetPackingChecklist('${trip.id}')" style="background: none; border: none; color: #EF4444; font-size: 0.72rem; font-weight: 700; cursor: pointer;">
+                            Desmarcar pestaña
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Custom Item Input -->
+                <div style="display: flex; gap: 8px; margin-bottom: 14px;">
+                    <input type="text" class="custom-item-input" style="flex: 1; background: #FFF; border: 1px solid var(--border-subtle); border-radius: 12px; padding: 10px 14px; font-size: 0.8rem; outline: none;" placeholder="Añadir a la maleta de ${TRAVELER_PACKING_SPECS[currentPackingTraveler].name.split(' ')[0]}...">
+                    <button class="header-btn" onclick="addCustomPackingItem('${trip.id}', this)" style="padding: 0 16px;">➕ Añadir</button>
+                </div>
+
+                <div class="packing-matrix-items"></div>
+            `;
+
+            renderCalculatedPackingList(container, trip);
+        }
+
+        function setTripBaggageMode(tripId, mode) {
+            const trip = (appData.trips || []).find(t => t.id === tripId);
+            if (trip) {
+                if (!trip.baggageConfig) trip.baggageConfig = {};
+                trip.baggageConfig.mode = mode;
+                saveState();
+                refreshAllPackingComponents(tripId);
+                showToast(`🧳 Modo ajustado a: ${mode === 'carry_on' ? 'Carry-On' : 'Bodega'}`);
+            }
+        }
+
+        function toggleTripLaundry(tripId, val) {
+            const trip = (appData.trips || []).find(t => t.id === tripId);
+            if (trip) {
+                if (!trip.baggageConfig) trip.baggageConfig = {};
+                trip.baggageConfig.laundryAvailable = val;
+                saveState();
+                refreshAllPackingComponents(tripId);
+                showToast(val ? '🧺 Lavandería activada (ropa reducida)' : 'Lavandería desactivada');
+            }
+        }
+
+        function renderCalculatedPackingList(container, trip) {
+            const itemsContainer = container.querySelector('.packing-matrix-items');
+            if (!itemsContainer) return;
+            itemsContainer.innerHTML = '';
+
+            const acts = trip.activitiesConfig || { golf: true, beach: true };
+            const storageKey = `packing_checked_${trip.id}`;
+            const checkedState = JSON.parse(localStorage.getItem(storageKey) || '{}');
+            const spec = TRAVELER_PACKING_SPECS[currentPackingTraveler] || TRAVELER_PACKING_SPECS.milton;
+
+            const categories = [];
+
+            spec.categories.forEach(cat => {
+                if (cat.tag === 'golf' && !acts.golf) return;
+                if (cat.tag === 'beach' && !acts.beach) return;
+
+                const filteredItems = cat.items.filter(it => {
+                    if (it.tag === 'golf' && !acts.golf) return false;
+                    if (it.tag === 'beach' && !acts.beach) return false;
+                    return true;
+                });
+
+                if (filteredItems.length > 0) {
+                    categories.push({
+                        name: cat.name,
+                        icon: cat.icon,
+                        tag: cat.tag,
+                        badge: cat.badge,
+                        items: filteredItems
+                    });
+                }
+            });
+
+            // Custom items for this traveler
+            const customItems = (trip.customPackingList || []).filter(c => c.traveler === currentPackingTraveler || (!c.traveler && currentPackingTraveler === 'shared'));
+            if (customItems.length > 0) {
+                categories.push({
+                    name: "Artículos Personalizados Añadidos",
+                    icon: "✨",
+                    items: customItems
+                });
+            }
+
+            categories.forEach(cat => {
+                const box = document.createElement('div');
+                box.style.marginBottom = '14px';
+
+                let catChecked = 0;
+                cat.items.forEach(it => { if (checkedState[it.id]) catChecked++; });
+
+                box.innerHTML = `
+                    <div class="packing-category-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <span>
+                            ${cat.icon} ${cat.name}
+                            ${cat.badge ? `<span style="font-size: 0.65rem; background: var(--gold-light); color: var(--gold-dark); padding: 2px 6px; border-radius: 6px; margin-left: 6px; font-weight: 700;">${cat.badge}</span>` : ''}
+                        </span>
+                        <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted);">${catChecked}/${cat.items.length}</span>
+                    </div>
+                `;
+
+                const list = document.createElement('div');
+                list.style.background = '#FFFFFF';
+                list.style.border = '1px solid var(--border-subtle)';
+                list.style.borderRadius = '16px';
+                list.style.padding = '4px 14px';
+
+                cat.items.forEach(item => {
+                    const isChecked = !!checkedState[item.id];
+                    const row = document.createElement('div');
+                    row.className = `check-item-ios ${isChecked ? 'checked' : ''}`;
+                    row.onclick = () => togglePackingItemState(trip.id, item.id);
+                    row.innerHTML = `
+                        <div class="checkbox-ios">
+                            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <div style="flex: 1;">
+                            <div class="check-text-title">
+                                ${item.text}
+                                ${item.badge ? `<span style="font-size: 0.65rem; background: #FEF3C7; color: #B45309; padding: 2px 6px; border-radius: 6px; margin-left: 6px; font-weight: 700;">${item.badge}</span>` : ''}
+                            </div>
+                            ${item.sub ? `<div class="check-text-desc">${item.sub}</div>` : ''}
+                        </div>
+                    `;
+                    list.appendChild(row);
+                });
+
+                box.appendChild(list);
+                itemsContainer.appendChild(box);
+            });
+        }
+
+        function togglePackingItemState(tripId, itemId) {
+            const storageKey = `packing_checked_${tripId}`;
+            const checkedState = JSON.parse(localStorage.getItem(storageKey) || '{}');
+            checkedState[itemId] = !checkedState[itemId];
+            localStorage.setItem(storageKey, JSON.stringify(checkedState));
+            refreshAllPackingComponents(tripId);
+        }
+
+        function resetPackingChecklist(tripId) {
+            if (!confirm(`¿Deseas desmarcar todos los artículos de la maleta de ${TRAVELER_PACKING_SPECS[currentPackingTraveler].name}?`)) return;
+            const storageKey = `packing_checked_${tripId}`;
+            const checkedState = JSON.parse(localStorage.getItem(storageKey) || '{}');
+            const spec = TRAVELER_PACKING_SPECS[currentPackingTraveler];
+            if (spec) {
+                spec.categories.forEach(c => {
+                    c.items.forEach(i => delete checkedState[i.id]);
+                });
+            }
+            const trip = (appData.trips || []).find(t => t.id === tripId);
+            (trip?.customPackingList || []).filter(c => c.traveler === currentPackingTraveler).forEach(i => delete checkedState[i.id]);
+            localStorage.setItem(storageKey, JSON.stringify(checkedState));
+            refreshAllPackingComponents(tripId);
+            showToast('Checklist desmarcado');
+        }
+
+        function addCustomPackingItem(tripId, btnEl) {
+            let input = null;
+            if (btnEl && btnEl.parentElement) {
+                input = btnEl.parentElement.querySelector('.custom-item-input');
+            }
+            if (!input) {
+                input = document.querySelector('.custom-item-input');
+            }
+            const val = (input?.value || '').trim();
+            if (!val) return;
+
+            const trip = (appData.trips || []).find(t => t.id === tripId);
+            if (trip) {
+                if (!trip.customPackingList) trip.customPackingList = [];
+                trip.customPackingList.push({
+                    id: 'custom_' + Date.now(),
+                    text: val,
+                    sub: `Añadido para ${TRAVELER_PACKING_SPECS[currentPackingTraveler].name}`,
+                    traveler: currentPackingTraveler
+                });
+                input.value = '';
+                saveState();
+                refreshAllPackingComponents(tripId);
+                showToast(`Artículo añadido a la maleta de ${TRAVELER_PACKING_SPECS[currentPackingTraveler].name.split(' ')[0]}`);
+            }
+        }
+
+        // Global Packing Screen
+        let activeGlobalPackingTripId = null;
+
+        function renderGlobalPacking() {
+            const container = document.getElementById('global-packing-content');
+            if (!container) return;
+
+            if (!activeGlobalPackingTripId) {
+                const activeTrip = (appData.trips || []).find(t => t.status === 'active') || (appData.trips || [])[0];
+                if (activeTrip) activeGlobalPackingTripId = activeTrip.id;
+            }
+            const trip = (appData.trips || []).find(t => t.id === activeGlobalPackingTripId) || (appData.trips || [])[0];
+            if (!trip) {
+                container.innerHTML = `<div style="text-align: center; padding: 20px; color: var(--text-muted);">No hay viajes seleccionados para empaque.</div>`;
+                return;
+            }
+
+            container.innerHTML = `
+                <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; margin-bottom: 8px; scrollbar-width: none;">
+                    ${(appData.trips || []).map(t => `
+                        <button class="sub-pill ${t.id === trip.id ? 'active' : ''}" onclick="selectGlobalPackingTrip('${t.id}')">
+                            ${t.flag || '📍'} ${t.title.split(':')[0].slice(0, 22)}
+                        </button>
+                    `).join('')}
+                </div>
+                <div id="global-packing-matrix-host"></div>
+            `;
+
+            const host = document.getElementById('global-packing-matrix-host');
+            if (host) renderSmartPackingComponent(host, trip);
+        }
+
+        function selectGlobalPackingTrip(tripId) {
+            activeGlobalPackingTripId = tripId;
+            renderGlobalPacking();
+        }
+
+        // Docs & Profile Screen
+        function renderDocs() {
+            const profileContainer = document.getElementById('profile-container');
+            const hotlinesContainer = document.getElementById('hotlines-container');
+            const prof = appData.travelersProfile || {};
+
+            if (profileContainer) {
+                const loy = prof.loyaltyPrograms || {};
+                profileContainer.innerHTML = `
+                    <div class="packing-config-card">
+                        <div style="font-size: 0.7rem; font-weight: 800; color: var(--gold-dark); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;">Viajeros Titulares</div>
+                        <div style="font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 700; color: var(--text-main); margin-bottom: 12px;">${prof.primaryTravelers || 'Milton Cruz & Aileen Rosso'}</div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.78rem; border-top: 1px solid var(--border-subtle); padding-top: 10px;">
+                            <div>✈️ <strong>Delta Air Lines:</strong> ${loy.delta}</div>
+                            <div>💎 <strong>JetBlue Airways:</strong> ${loy.jetblue}</div>
+                            <div>🇪🇸 <strong>Iberia Plus:</strong> ${loy.iberia}</div>
+                            <div>💳 <strong>American Express:</strong> ${loy.amex}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (hotlinesContainer) {
+                hotlinesContainer.innerHTML = '';
+                (prof.emergencyContacts || []).forEach(c => {
+                    const row = document.createElement('div');
+                    row.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 12px 4px; border-bottom: 1px solid var(--border-subtle); font-size: 0.82rem;';
+                    const cleanPhone = c.number.replace(/[^0-9+]/g, '');
+                    row.innerHTML = `
+                        <span style="font-weight: 600;">${c.label}</span>
+                        <a href="tel:${cleanPhone}" class="header-btn" style="padding: 6px 12px; font-size: 0.74rem;">📞 ${c.number}</a>
+                    `;
+                    hotlinesContainer.appendChild(row);
+                });
+            }
+        }
+    </script>
+</body>
+</html>

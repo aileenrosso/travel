@@ -1,0 +1,1165 @@
+{
+  "version": "5.4",
+  "appName": "Travel Planner",
+  "lastUpdated": "2026-09-16 11:14:32",
+  "travelersProfile": {
+    "primaryTravelers": "Milton Cruz & Aileen Rosso",
+    "groupMembers": [
+      "Milton Cruz",
+      "Aileen Rosso",
+      "Laura Franco",
+      "Ricardo Miró"
+    ],
+    "loyaltyPrograms": {
+      "delta": "Platinum Medallion (SkyTeam Elite Plus) — SkyPriority, Delta Sky Club / Lounge, upgrades",
+      "jetblue": "Mosaic 3 — TrueBlue Aileen: 2009139422 · Milton: 2009139624 — 2 maletas gratis, embarque prioritario",
+      "iberia": "Iberia Plus — Aileen: 127217016 · Milton: JCH8028",
+      "amex": "The Platinum Card — Centurion Lounges, Delta Sky Club, FHR Benefits, Room Upgrades, Late Check-out"
+    },
+    "emergencyContacts": [
+      {
+        "label": "Renfe Atención al Cliente / AVE VIP",
+        "number": "+34 912 320 320"
+      },
+      {
+        "label": "Rosewood Villa Magna Madrid Concierge",
+        "number": "+34 91 587 1234"
+      },
+      {
+        "label": "Modern Travel & Tours (Flavia Rivera - Agente)",
+        "number": "+1 787-721-3984"
+      },
+      {
+        "label": "Solhop 24h Transfer Support (Ref SOL374254)",
+        "number": "+34 951 120 740"
+      },
+      {
+        "label": "SO/ Sotogrande Resort & Spa Concierge",
+        "number": "+34 956 565 400"
+      },
+      {
+        "label": "Hotel Colón Gran Meliá Sevilla",
+        "number": "+34 954 505 599"
+      },
+      {
+        "label": "Iberia Plus & VIP Customer Line",
+        "number": "+34 900 670 420"
+      },
+      {
+        "label": "Air France Platinum Priority Line",
+        "number": "+33 9 69 39 36 54"
+      },
+      {
+        "label": "ITA Airways VIP Customer Support",
+        "number": "+39 06 8596 0020"
+      },
+      {
+        "label": "Hôtel Le Meurice Paris Concierge Desk",
+        "number": "+33 1 87 16 44 50"
+      },
+      {
+        "label": "Hostellerie Cèdre & Spa Concierge Beaune",
+        "number": "+33 3 80 24 01 01"
+      },
+      {
+        "label": "Maison Champy Winery Concierge (Beaune)",
+        "number": "+33 3 80 23 75 21"
+      },
+      {
+        "label": "Cantine Menhir Salento (Mrs. Giusi Giracello)",
+        "number": "+39 393 9460233"
+      },
+      {
+        "label": "EU European Emergency (Spain, France & Italy)",
+        "number": "112"
+      },
+      {
+        "label": "U.S. Embassy Madrid",
+        "number": "+34 91 587 2200"
+      },
+      {
+        "label": "U.S. Embassy Paris",
+        "number": "+33 1 43 12 22 22"
+      },
+      {
+        "label": "U.S. Embassy Rome",
+        "number": "+39 06 46741"
+      }
+    ]
+  },
+  "trips": [
+    {
+      "id": "trip-spain-andalucia-sep2026",
+      "status": "active",
+      "category": "active",
+      "title": "España & Andalucía: Sotogrande y Sevilla",
+      "subtitle": "Vuelos SJU-SDQ-MAD en Business, SO/ Sotogrande 5*, Hotel Colón en Sevilla, AVE Confort y Rosewood Villa Magna 5* GL en Madrid",
+      "destination": "Sotogrande, Sevilla & Madrid (España)",
+      "country": "España",
+      "flag": "🇪🇸",
+      "coverImage": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=1200&q=80",
+      "startDate": "2026-09-18",
+      "endDate": "2026-09-29",
+      "datesDisplay": "18 – 29 Sep 2026",
+      "durationDays": 12,
+      "leadPassenger": "Milton Cruz (+1 787 504 7476) & Aileen Rosso",
+      "climate": {
+        "summary": "Mediterráneo cálido y soleado en Costa del Sol (64°F - 79°F), días soleados y agradables en Sevilla (66°F - 84°F).",
+        "tempLowF": 64,
+        "tempHighF": 84,
+        "condition": "Soleado / Templado",
+        "icon": "☀️",
+        "packingAdvice": "Prendas de lino, camisas frescas, gafas de sol, ropa de golf y calzado cómodo para el casco histórico de Sevilla."
+      },
+      "activitiesConfig": {
+        "golf": true,
+        "beach": true
+      },
+      "baggageConfig": {
+        "mode": "checked",
+        "laundryAvailable": true,
+        "purpose": "resort_golf_culture",
+        "formalNights": 2
+      },
+      "flights": [
+        {
+          "segment": "Ida Tramo 1 · San Juan ➔ Santo Domingo",
+          "airline": "JetBlue Airways",
+          "flightNumber": "JetBlue 2537",
+          "pnr": "SUBNVC",
+          "from": "SJU",
+          "fromName": "San Juan Luis Muñoz Marín (Terminal A)",
+          "to": "SDQ",
+          "toName": "Santo Domingo Las Américas",
+          "depTime": "12:45 PM",
+          "arrTime": "1:48 PM",
+          "date": "Viernes 18 Sep 2026",
+          "status": "CONFIRMADO",
+          "seats": "Aileen Rosso 4A · Milton Cruz 4C (EvenMore® Space)",
+          "tickets": "Aileen: 2792120630835 · Milton: 2792120630058",
+          "perks": "Mosaic 3, 2 maletas gratis c/u, embarque Grupo 1",
+          "notes": "Conexión de 2h 57m en SDQ hacia el vuelo transatlántico de Iberia."
+        },
+        {
+          "segment": "Ida Tramo 2 · Santo Domingo ➔ Madrid Barajas",
+          "airline": "Iberia",
+          "flightNumber": "IB 0266",
+          "pnr": "K2Y8B",
+          "cabin": "Business Class (Lie-Flat)",
+          "from": "SDQ",
+          "fromName": "Santo Domingo Las Américas",
+          "to": "MAD",
+          "toName": "Madrid Barajas (Terminal 4S)",
+          "depTime": "16:45 (4:45 PM)",
+          "arrTime": "07:20 AM (+1, Sáb 19 Sep)",
+          "date": "Viernes 18 Sep – Sábado 19 Sep 2026",
+          "duration": "8h 35m",
+          "status": "CONFIRMADO",
+          "seats": "Aileen Rosso & Milton Cruz (Iberia Plus: 127217016 / JCH8028)",
+          "perks": "Cama Lie-Flat 180°, cena gourmet y desayuno a bordo. Sala VIP Velázquez T4S a la llegada.",
+          "notes": "Llegada a las 07:20 AM a Madrid T4S y conexión al vuelo hacia Málaga."
+        },
+        {
+          "segment": "Ida Tramo 3 · Madrid ➔ Málaga (Costa del Sol)",
+          "airline": "Iberia",
+          "flightNumber": "IB 1003",
+          "from": "MAD",
+          "fromName": "Madrid Barajas (Terminal 4)",
+          "to": "AGP",
+          "toName": "Málaga-Costa del Sol",
+          "depTime": "Mañana",
+          "arrTime": "12:45 PM",
+          "date": "Sábado 19 Sep 2026",
+          "status": "CONFIRMADO",
+          "notes": "Aterrizaje en Málaga a las 12:45 PM. Chofer de Solhop espera en llegadas."
+        },
+        {
+          "segment": "Retorno Transatlántico · Madrid ➔ Santo Domingo",
+          "airline": "Iberia",
+          "flightNumber": "IB 0263",
+          "pnr": "K2Y8B",
+          "cabin": "Business Class (Lie-Flat)",
+          "from": "MAD",
+          "fromName": "Madrid Barajas (Terminal 4S)",
+          "to": "SDQ",
+          "toName": "Santo Domingo Las Américas",
+          "depTime": "15:45 (3:45 PM)",
+          "arrTime": "18:35 (6:35 PM)",
+          "date": "Lunes 28 Sep 2026",
+          "duration": "8h 50m",
+          "status": "CONFIRMADO",
+          "seats": "Aileen Rosso & Milton Cruz (Business Class)",
+          "perks": "Almuerzo y merienda gourmet, cama 180°, franquicia de equipaje Business."
+        },
+        {
+          "segment": "Retorno Caribe · Punta Cana ➔ San Juan",
+          "airline": "JetBlue Airways",
+          "flightNumber": "JetBlue 2332",
+          "pnr": "AWBZLX",
+          "from": "PUJ",
+          "fromName": "Punta Cana (Terminal A)",
+          "to": "SJU",
+          "toName": "San Juan Luis Muñoz Marín",
+          "depTime": "1:25 PM",
+          "arrTime": "2:19 PM",
+          "date": "Martes 29 Sep 2026",
+          "status": "CONFIRMADO",
+          "tickets": "Aileen: 2792118412998 · Milton: 2792118412999",
+          "perks": "Mosaic 3, 2 maletas gratis c/u, embarque prioritario",
+          "notes": "Vuelo de regreso a Puerto Rico completando el viaje."
+        }
+      ],
+      "transfers": [
+        {
+          "company": "Solhop Airport Transfers",
+          "ref": "SOL374254",
+          "type": "Vehículo Privado Premium (Sedan exclusivo)",
+          "pickup": "Málaga Airport Arrivals (Conductor con cartel a nombre de Milton Cruz)",
+          "pickupTime": "12:45 PM (Sábado 19 Sep 2026)",
+          "destination": "SO/ Sotogrande Resort & Spa (Av. Almenara S/N, San Roque, Cádiz)",
+          "duration": "~1h 10m por autopista AP-7",
+          "price": "142.00 €",
+          "payment": "A pagar directamente al conductor en efectivo o tarjeta de crédito",
+          "supportPhone": "+34 951 120 740",
+          "supportPhoneUk": "+44 203 897 0838"
+        }
+      ],
+      "lodgings": [
+        {
+          "name": "SO/ Sotogrande Resort & Spa 5*****",
+          "city": "Sotogrande (Cádiz)",
+          "address": "Avenida Almenara S/N, 11310 Sotogrande, San Roque, Cádiz, España",
+          "checkin": "Sáb 19 Sep (desde 15:00)",
+          "checkout": "Mar 22 Sep (hasta 12:00)",
+          "conf": "SOL374254-RESORT",
+          "cost": "Confirmado · 5 Estrellas Gran Lujo (3 Noches)",
+          "image": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=800&q=80",
+          "mapQuery": "SO+Sotogrande+Resort+Spa+San+Roque+Cadiz",
+          "phone": "+34 956 565 400",
+          "highlights": "Campo de golf Almenara de 27 hoyos, Elysium Spa de 2,800 m², restaurantes Cortijo & Society, vistas al Mediterráneo."
+        },
+        {
+          "name": "Hotel Colón, a Gran Meliá Hotel 5*****",
+          "city": "Sevilla",
+          "address": "Canalejas 1, Casco Antiguo, 41001 Sevilla, España",
+          "checkin": "Mar 22 Sep (desde 15:00)",
+          "checkout": "Vie 25 Sep (hasta 12:00)",
+          "conf": "6107554872 (PIN: 4129)",
+          "cost": "1,529.10 € · The Leading Hotels of the World (3 Noches) · Habitación Premium · Desayuno incluido",
+          "image": "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?auto=format&fit=crop&w=800&q=80",
+          "mapQuery": "Hotel+Colon+Gran+Melia+Canalejas+1+Sevilla",
+          "phone": "+34 954 505 599",
+          "highlights": "Hotel histórico de autor miembro de The Leading Hotels of the World en el corazón de Sevilla, diseño de Philippe Starck y alta gastronomía."
+        },
+        {
+          "name": "Rosewood Villa Magna 5***** GL",
+          "city": "Madrid",
+          "address": "Paseo de la Castellana 22, Barrio de Salamanca, 28046 Madrid, España",
+          "checkin": "Vie 25 Sep (desde 15:00)",
+          "checkout": "Lun 28 Sep (hasta 12:00)",
+          "conf": "32298SG208578",
+          "cost": "2,574.00 € · Premier Room (3 Noches) · Milton Cruz & Aileen Rosso",
+          "image": "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?auto=format&fit=crop&w=800&q=80",
+          "mapQuery": "Rosewood+Villa+Magna+Paseo+de+la+Castellana+22+Madrid",
+          "phone": "+34 91 587 1234",
+          "email": "villamagna@rosewoodhotels.com",
+          "highlights": "Palacio urbano de ultra-lujo en el Paseo de la Castellana (Barrio de Salamanca). Alta gastronomía en Restaurante Amós por Jesús Sánchez (3★ Michelin), spa Sense con auténtico hammam turco y servicio de concierge distinguido."
+        }
+      ],
+      "timeline": [
+        {
+          "date": "Vie 18 Sep",
+          "dest": "Salida",
+          "title": "Vuelo SJU ➔ SDQ ➔ Salida Transatlántica a Madrid",
+          "items": [
+            "12:45 PM Salida en vuelo JetBlue 2537 de San Juan (SJU) a Santo Domingo (SDQ, llega 1:48 PM) en asientos EvenMore Space 4A/4C (Conf: SUBNVC)",
+            "Conexión de 2h 57m en Santo Domingo con acceso a salón VIP",
+            "16:45 PM Salida en vuelo transatlántico Iberia IB 0266 (SDQ ➔ MAD T4S) en cabina Business Class Lie-Flat (Conf: K2Y8B)",
+            "Cena gourmet diseñada por chefs estrella Michelin y descanso en cama de 180°"
+          ],
+          "lunchOptions": [
+
+          ]
+        },
+        {
+          "date": "Sáb 19 Sep",
+          "dest": "Sotogrande",
+          "title": "Llegada a España & Check-in en SO/ Sotogrande",
+          "items": [
+            "07:20 AM Aterrizaje en Madrid Barajas (MAD T4S). Tránsito y desayuno en la Sala VIP Velázquez",
+            "Conexión en vuelo IB 1003 hacia el Aeropuerto de Málaga (AGP, llega 12:45 PM)",
+            "Encuentro en terminal de llegadas con chofer de Solhop (cartel Milton Cruz, Ref: SOL374254, 142€)",
+            "Traslado privado de 1h 10m por autopista AP-7 a SO/ Sotogrande Resort & Spa 5*****",
+            "Check-in, tarde de piscina/spa Elysium y cena en Restaurante Cortijo"
+          ],
+          "lunchOptions": [
+            {
+              "name": "Cortijo Tapas & Grill (SO/ Sotogrande)",
+              "query": "Cortijo Restaurant SO Sotogrande"
+            }
+          ]
+        },
+        {
+          "date": "Dom 20 Sep",
+          "dest": "Sotogrande",
+          "title": "Golf en Almenara (27 Hoyos) & Marina de Sotogrande",
+          "items": [
+            "Desayuno buffet andaluz en Society Clubhouse",
+            "Mañana deportiva: Ronda de golf en Almenara Golf Club",
+            "Almuerzo frente a los yates en la Marina de Sotogrande",
+            "Tarde de relax con vistas al Peñón de Gibraltar y cena de autor"
+          ],
+          "lunchOptions": [
+            {
+              "name": "Midas Marina Sotogrande",
+              "query": "Midas Restaurante Marina Sotogrande"
+            },
+            {
+              "name": "Cancha II Asador",
+              "query": "Cancha II Sotogrande"
+            }
+          ]
+        },
+        {
+          "date": "Lun 21 Sep",
+          "dest": "Sotogrande",
+          "title": "Día de Bienestar, Circuito Termal & Pueblos Blancos",
+          "items": [
+            "Circuito de hidroterapia termal en Elysium Spa (2,800 m²)",
+            "Almuerzo ligero en la piscina infinita",
+            "Paseo por Castellar de la Frontera y atardecer mediterráneo",
+            "Cena maridada con vinos andaluces"
+          ],
+          "lunchOptions": [
+            {
+              "name": "Society Clubhouse (SO/ Sotogrande)",
+              "query": "Society Clubhouse SO Sotogrande"
+            }
+          ]
+        },
+        {
+          "date": "Mar 22 Sep",
+          "dest": "Sevilla",
+          "title": "Traslado a Sevilla & Check-in en Hotel Colón Gran Meliá",
+          "items": [
+            "12:00 PM Check-out de SO/ Sotogrande",
+            "Traslado privado hacia Sevilla (~2h)",
+            "15:00 PM Check-in en Hotel Colón, a Gran Meliá Hotel 5***** (The Leading Hotels of the World, Conf: 6107554872)",
+            "Copa de bienvenida en el patio interior señorial",
+            "Paseo vespertino por el Barrio de Santa Cruz y cena de tapas sevillanas"
+          ],
+          "lunchOptions": [
+            {
+              "name": "El Burladero (Hotel Colón Gran Meliá)",
+              "query": "Restaurante El Burladero Sevilla"
+            },
+            {
+              "name": "Casa Morales (Tapas Históricas)",
+              "query": "Casa Morales Sevilla"
+            }
+          ]
+        },
+        {
+          "date": "Mié 23 Sep",
+          "dest": "Sevilla",
+          "title": "Sevilla Monumental: Real Alcázar, Catedral & La Giralda",
+          "items": [
+            "Desayuno buffet premium incluido en Hotel Colón Gran Meliá",
+            "Visita guiada privada al Real Alcázar de Sevilla (joya mudéjar de la UNESCO)",
+            "Ascenso a la Giralda y recorrido por la Catedral gótica más grande del mundo",
+            "Almuerzo gastronómico junto al río Guadalquivir",
+            "Paseo al atardecer por el Puente de Triana"
+          ],
+          "lunchOptions": [
+            {
+              "name": "Abades Triana (Vistas a la Torre del Oro)",
+              "query": "Abades Triana Sevilla"
+            },
+            {
+              "name": "Eslava (Alta Cocina de Tapas)",
+              "query": "Restaurante Eslava Sevilla"
+            }
+          ]
+        },
+        {
+          "date": "Jue 24 Sep",
+          "dest": "Sevilla",
+          "title": "Plaza de España, Parque de María Luisa & Arte Flamenco",
+          "items": [
+            "Mañana: Paseo por la majestuosa Plaza de España y los jardines de María Luisa",
+            "Almuerzo gastronómico andaluz",
+            "Tarde de compras en las boutiques de Calle Sierpes y Tetuán",
+            "Espectáculo íntimo de cante y baile flamenco en tablao histórico de autor"
+          ],
+          "lunchOptions": [
+            {
+              "name": "Cañabota (Estrella Michelin Mariscos)",
+              "query": "Restaurante Canabota Sevilla"
+            }
+          ]
+        },
+        {
+          "date": "Vie 25 Sep",
+          "dest": "Sevilla ➔ Madrid",
+          "title": "Check-out Hotel Colón ➔ AVE Confort a Madrid ➔ Check-in Rosewood Villa Magna",
+          "items": [
+            "11:00 AM Traslado a la estación Sevilla Santa Justa",
+            "11:32 AM Salida en Tren de Alta Velocidad Renfe AVE 02111 hacia Madrid Puerta de Atocha (llega 14:11 PM)",
+            "Asientos Confort: Coche 1, Plazas 9B (Aileen) y 9C (Milton) con aperitivo a bordo (Conf: 73MWSR)",
+            "14:11 PM Llegada a Madrid Puerta de Atocha y traslado privado a Rosewood Villa Magna (Paseo de la Castellana 22)",
+            "15:00 PM Check-in en Rosewood Villa Magna 5***** GL (Premier Room, Conf: 32298SG208578)",
+            "Paseo por las exclusivas boutiques de la Milla de Oro (Serrano, Ortega y Gasset) y cena de autor en Restaurante Amós (Jesús Sánchez, 3★ Michelin)"
+          ],
+          "lunchOptions": [
+            {
+              "name": "Aperitivo gourmet a bordo del AVE",
+              "query": "Renfe AVE Confort Aperitivo"
+            },
+            {
+              "name": "Las Brasas de Castellana (Rosewood Villa Magna)",
+              "query": "Las Brasas de Castellana Rosewood Madrid"
+            }
+          ]
+        },
+        {
+          "date": "Sáb 26 Sep",
+          "dest": "Madrid",
+          "title": "Triángulo del Arte, Museo del Prado & Alta Cultura Madrileña",
+          "items": [
+            "Desayuno buffet gourmet en Rosewood Villa Magna",
+            "Mañana cultural privada: Visita al Museo Nacional del Prado y recorrido por el Paisaje de la Luz (Patrimonio Mundial UNESCO)",
+            "Paseo relajado por el Real Jardín Botánico y los Jardines del Buen Retiro",
+            "Almuerzo gastronómico en terraza emblemática",
+            "Tarde de compras exclusivas en Barrio de Salamanca y cócteles en Tarde.O Bar"
+          ],
+          "lunchOptions": [
+            {
+              "name": "Platea Madrid",
+              "query": "Platea Madrid Goya"
+            },
+            {
+              "name": "Restaurante Amazónico",
+              "query": "Amazonico Madrid Jorge Juan"
+            }
+          ]
+        },
+        {
+          "date": "Dom 27 Sep",
+          "dest": "Madrid",
+          "title": "Madrid de los Austrias, Palacio Real & Sesión de Spa Sense",
+          "items": [
+            "Mañana histórica: Recorrido guiado por el Palacio Real de Madrid, Plaza de Oriente y Plaza Mayor",
+            "Aperitivo castizo y tapas selectas en el Mercado de San Miguel o Cava Baja",
+            "Tarde de descanso y bienestar: Circuito termal y hammam turco en Sense Spa (Rosewood Villa Magna)",
+            "Cena de despedida de España en restaurante gastronómico"
+          ],
+          "lunchOptions": [
+            {
+              "name": "Casa Lucio (Cava Baja)",
+              "query": "Casa Lucio Madrid Cava Baja"
+            },
+            {
+              "name": "Mercado de San Miguel",
+              "query": "Mercado de San Miguel Madrid"
+            }
+          ]
+        },
+        {
+          "date": "Lun 28 Sep",
+          "dest": "Madrid ➔ SDQ",
+          "title": "Check-out Rosewood Villa Magna ➔ Vuelo Transatlántico en Business a Santo Domingo",
+          "items": [
+            "Desayuno gourmet y check-out a las 12:00 PM de Rosewood Villa Magna",
+            "Traslado privado hacia el Aeropuerto de Madrid Barajas Adolfo Suárez Terminal 4S",
+            "Almuerzo y descanso en la Sala VIP Velázquez T4S (Iberia Premium Lounge)",
+            "15:45 PM Salida en vuelo transatlántico Iberia IB 0263 (MAD ➔ SDQ) en cabina Business Class Lie-Flat (Conf: K2Y8B)",
+            "18:35 PM Aterrizaje en Santo Domingo (SDQ) y estancia de descanso en República Dominicana"
+          ],
+          "lunchOptions": [
+            {
+              "name": "Sala VIP Velázquez (Madrid Barajas T4S)",
+              "query": "Iberia VIP Lounge Velazquez Madrid T4S"
+            }
+          ]
+        },
+        {
+          "date": "Mar 29 Sep",
+          "dest": "San Juan",
+          "title": "Vuelo de Regreso al Hogar · Punta Cana ➔ San Juan",
+          "items": [
+            "Traslado al Aeropuerto de Punta Cana (PUJ Terminal A)",
+            "1:25 PM Salida en vuelo JetBlue 2332 hacia San Juan (SJU)",
+            "2:19 PM Aterrizaje en San Juan Luis Muñoz Marín culminando el gran viaje por España"
+          ],
+          "lunchOptions": [
+
+          ]
+        }
+      ],
+      "trains": [
+        {
+          "operator": "Renfe",
+          "trainType": "AVE",
+          "trainNumber": "AVE 02111",
+          "pnr": "73MWSR",
+          "class": "Confort (Billete Prémium)",
+          "route": "Sevilla Santa Justa ➔ Madrid Puerta de Atocha",
+          "from": "SVQ",
+          "fromStation": "Sevilla Santa Justa",
+          "to": "MAD",
+          "toStation": "Madrid Puerta de Atocha Almudena Grandes",
+          "date": "Viernes 25 Sep 2026",
+          "depTime": "11:32 AM",
+          "arrTime": "14:11 PM",
+          "duration": "2h 39m",
+          "status": "CONFIRMADO",
+          "seats": "Aileen Rosso (Coche 1, Plaza 9B) · Milton Cruz (Coche 1, Plaza 9C)",
+          "tickets": "Aileen: 7562202099270 · Milton: 7562202099288",
+          "combinadoCercanias": "Aileen: CYNH8 · Milton: YY5DD (Billete Cercanías incluido)",
+          "perks": "Billete Prémium con Aperitivo / Merienda incluido a bordo, asientos Confort de máxima amplitud, silencio y acceso a Sala Club.",
+          "cost": "228.40 € (Total 2 plazas)",
+          "notes": "Cierre del acceso al tren 2 minutos antes de la salida."
+        }
+      ]
+    },
+    {
+      "id": "trip-europe-autumn-2026",
+      "status": "upcoming",
+      "category": "upcoming",
+      "title": "Grand European Autumn: Paris, Burgundy & Puglia",
+      "subtitle": "Gira de otoño por Francia e Italia con amigos (Grupo de 6)",
+      "destination": "París, Borgoña & Puglia (Francia e Italia)",
+      "country": "Francia & Italia",
+      "flag": "🥐🍷🌊",
+      "coverImage": "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=1200&q=80",
+      "startDate": "2026-10-18",
+      "endDate": "2026-11-01",
+      "datesDisplay": "18 Oct – 01 Nov 2026",
+      "durationDays": 15,
+      "climate": {
+        "summary": "Otoño fresco en Francia (39°F - 61°F), templado en Puglia (52°F - 72°F).",
+        "tempLowF": 39,
+        "tempHighF": 72,
+        "condition": "Fresco / Follaje Dorado",
+        "icon": "🍂",
+        "packingAdvice": "Capas técnicas de lana/cashmere, trench impermeable para Francia; lino ligero y cortavientos para el yate en Puglia."
+      },
+      "activitiesConfig": {
+        "golf": false,
+        "beach": true
+      },
+      "baggageConfig": {
+        "mode": "checked",
+        "laundryAvailable": true,
+        "purpose": "culinary_cultural_yacht",
+        "formalNights": 4
+      },
+      "agency": {
+        "name": "Modern Travel & Tours",
+        "agent": "Flavia Rivera",
+        "phone": "+1 787-721-3984",
+        "email": "flavia@moderntravelpr.com"
+      },
+      "flights": [
+        {
+          "segment": "Salida Transatlántica · Rep. Dominicana ➔ París vía Madrid",
+          "airline": "Iberia",
+          "pnr": "CDK85U",
+          "agencyCode": "KZTOZG",
+          "date": "Dom 18 Oct – Lun 19 Oct 2026",
+          "status": "CONFIRMADO & EMITIDO",
+          "cabin": "Business Class (I) · Lie-Flat Suites",
+          "tickets": [
+            {
+              "name": "Milton Cruz",
+              "ticket": "0757551797698",
+              "seatLeg1": "04D",
+              "seatLeg2": "02D"
+            },
+            {
+              "name": "Aileen Rosso",
+              "ticket": "0757551797700",
+              "seatLeg1": "04H",
+              "seatLeg2": "02F"
+            }
+          ],
+          "legs": [
+            {
+              "flightNum": "IB 264",
+              "from": "SDQ",
+              "fromCity": "Santo Domingo",
+              "to": "MAD",
+              "toCity": "Madrid Barajas T4S",
+              "dep": "Dom 18 Oct · 21:15",
+              "arr": "Lun 19 Oct · 11:35",
+              "aircraft": "Airbus A330",
+              "duration": "8h 20m",
+              "seats": "Milton 04D · Aileen 04H",
+              "perks": "Cama Lie-Flat 180°, cena gourmet Michelin."
+            },
+            {
+              "isLayover": true,
+              "title": "Escala VIP Madrid Barajas (MAD)",
+              "duration": "4h 10m",
+              "details": "Acceso a Sala VIP Velázquez T4S (duchas, buffet y descanso)."
+            },
+            {
+              "flightNum": "IB 589",
+              "from": "MAD",
+              "fromCity": "Madrid T4",
+              "to": "CDG",
+              "toCity": "París Charles de Gaulle T3",
+              "dep": "Lun 19 Oct · 15:45",
+              "arr": "Lun 19 Oct · 17:55",
+              "aircraft": "Airbus A321",
+              "duration": "2h 10m",
+              "seats": "Milton 02D · Aileen 02F"
+            }
+          ]
+        },
+        {
+          "segment": "Vuelo Intermedio · París / Borgoña ➔ Puglia (Bari)",
+          "airline": "Air France (Operado por HOP!)",
+          "pnr": "CEV4RW",
+          "agencyCode": "SHROXL",
+          "date": "Domingo 25 Octubre 2026",
+          "status": "CONFIRMADO & EMITIDO",
+          "cabin": "Economy (W) · SkyTeam Elite Plus",
+          "loyalty": "Delta Platinum Medallion vinculado",
+          "tickets": [
+            {
+              "name": "Milton Cruz",
+              "ticket": "0577551797713",
+              "seat": "14D",
+              "ff": "DL 2198603264"
+            },
+            {
+              "name": "Aileen Rosso",
+              "ticket": "0577551797714",
+              "seat": "14F",
+              "ff": "DL 2024557726"
+            }
+          ],
+          "legs": [
+            {
+              "flightNum": "AF 1288",
+              "from": "CDG",
+              "fromCity": "París Charles de Gaulle T2G",
+              "to": "BRI",
+              "toCity": "Bari Karol Wojtyła",
+              "dep": "Dom 25 Oct · 16:40",
+              "arr": "Dom 25 Oct · 19:00",
+              "aircraft": "Embraer 190",
+              "duration": "2h 20m (Directo)",
+              "seats": "Milton 14D · Aileen 14F"
+            }
+          ]
+        },
+        {
+          "segment": "Retorno · Puglia ➔ Roma ➔ Madrid ➔ Rep. Dominicana",
+          "airline": "ITA Airways + Iberia",
+          "pnr": "BWASGL (ITA) · CDK85U (Iberia)",
+          "agencyCode": "UFAUMC / KZTOZG",
+          "date": "Domingo 01 Noviembre 2026",
+          "status": "CONFIRMADO & EMITIDO",
+          "cabin": "AZ Economy (T) + Iberia Business Lie-Flat (I)",
+          "tickets": [
+            {
+              "name": "Milton Cruz",
+              "ticketAZ": "0557551797717",
+              "ticketIB": "0757551797698",
+              "seatAZ": "11D",
+              "seatIB_FCO": "02D",
+              "seatIB_MAD": "02D"
+            },
+            {
+              "name": "Aileen Rosso",
+              "ticketAZ": "0557551797718",
+              "ticketIB": "0757551797700",
+              "seatAZ": "11E",
+              "seatIB_FCO": "02F",
+              "seatIB_MAD": "02H"
+            }
+          ],
+          "legs": [
+            {
+              "flightNum": "AZ 1620 (ITA Airways)",
+              "from": "BDS",
+              "fromCity": "Brindisi Salento",
+              "to": "FCO",
+              "toCity": "Roma Fiumicino T1",
+              "dep": "Dom 01 Nov · 06:20 AM",
+              "arr": "Dom 01 Nov · 07:35 AM",
+              "aircraft": "Airbus A320",
+              "duration": "1h 15m",
+              "seats": "Milton 11D · Aileen 11E"
+            },
+            {
+              "isLayover": true,
+              "title": "Escala VIP Roma Fiumicino (FCO T1)",
+              "duration": "4h 25m",
+              "details": "Sala VIP Piazza di Spagna de ITA Airways (desayuno barista y descanso)."
+            },
+            {
+              "flightNum": "IB 648 (Iberia Business)",
+              "from": "FCO",
+              "fromCity": "Roma FCO T1",
+              "to": "MAD",
+              "toCity": "Madrid Barajas T4",
+              "dep": "Dom 01 Nov · 12:00 PM",
+              "arr": "Dom 01 Nov · 14:35 PM",
+              "aircraft": "Airbus A320",
+              "duration": "2h 35m",
+              "seats": "Milton 02D · Aileen 02F"
+            },
+            {
+              "isLayover": true,
+              "title": "Tránsito Madrid Barajas",
+              "duration": "1h 40m",
+              "details": "Conexión preferente entre T4 y T4S."
+            },
+            {
+              "flightNum": "IB 263 (Iberia Business Lie-Flat)",
+              "from": "MAD",
+              "fromCity": "Madrid Barajas T4S",
+              "to": "SDQ",
+              "toCity": "Santo Domingo",
+              "dep": "Dom 01 Nov · 16:15 PM",
+              "arr": "Dom 01 Nov · 20:30 PM",
+              "aircraft": "Airbus A330",
+              "duration": "9h 15m",
+              "seats": "Milton 02D · Aileen 02H"
+            }
+          ]
+        }
+      ],
+      "lodgings": [
+        {
+          "name": "Hôtel Le Meurice (Dorchester Collection)",
+          "city": "París",
+          "host": "Marc Letellier (Diamond Club Specialist)",
+          "address": "228 Rue de Rivoli, 75001 París, Francia",
+          "image": "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80",
+          "checkin": "Mar 20 Oct (desde 15:00)",
+          "checkout": "Jue 22 Oct (hasta 12:00)",
+          "conf": "LMR013498050 · LMR013498051 · LMR013498052",
+          "cost": "€3,540 / hab. (Diamond Club · Upgrade Garantizado · Crédito 100€)",
+          "mapQuery": "Hotel+Le+Meurice+228+Rue+de+Rivoli+Paris"
+        },
+        {
+          "name": "Hostellerie Cèdre & Spa Beaune*****",
+          "city": "Borgoña (Beaune)",
+          "host": "Nathalie (Responsable Réservation)",
+          "address": "10 Boulevard Maréchal Foch, 21200 Beaune, Francia",
+          "image": "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80",
+          "checkin": "Jue 22 Oct (desde 16:00)",
+          "checkout": "Dom 25 Oct (hasta 11:00)",
+          "conf": "3 Habitaciones · Total: 3,894€",
+          "cost": "Confirmado · Desayuno buffet incluido · Spa Nuxe · Cata en Maison Champy",
+          "mapQuery": "Hostellerie+Cedre+Spa+10+Boulevard+Marechal+Foch+Beaune"
+        },
+        {
+          "name": "Sextantio Le Grotte della Civita",
+          "city": "Matera",
+          "address": "Via Civita 28, 75100 Matera, Italia",
+          "image": "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=800&q=80",
+          "checkin": "Lun 26 Oct (desde 14:00)",
+          "checkout": "Mar 27 Oct (hasta 12:00)",
+          "conf": "Sextantio-Cività (1 Noche / 6 Adultos)",
+          "cost": "Confirmado · Suites trogloditas excavadas en roca viva",
+          "mapQuery": "Sextantio+Le+Grotte+della+Civita+Matera"
+        },
+        {
+          "name": "Masseria Le Carrube",
+          "city": "Ostuni",
+          "address": "Contrada Carrube, 72017 Ostuni BR, Italia",
+          "image": "https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=800&q=80",
+          "checkin": "Mar 27 Oct (desde 16:00)",
+          "checkout": "Vie 30 Oct (hasta 09:25)",
+          "conf": "Masseria-Carrube (3 Noches / 6 Adultos)",
+          "cost": "Confirmado · Arquitectura tradicional encalada entre olivares milenarios",
+          "mapQuery": "Masseria+Le+Carrube+Ostuni"
+        },
+        {
+          "name": "Palazzo Bozzi Corso (La Fiermontina)",
+          "city": "Lecce",
+          "address": "Via Umberto I 38, 73100 Lecce, Italia",
+          "image": "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?auto=format&fit=crop&w=800&q=80",
+          "checkin": "Vie 30 Oct (desde 15:00)",
+          "checkout": "Dom 01 Nov (salida 04:45 AM)",
+          "conf": "Palazzo-Bozzi-Corso (2 Noches / 6 Adultos)",
+          "cost": "Confirmado · Palacio aristocrático de 1775 a pasos de Santa Croce",
+          "mapQuery": "Palazzo+Bozzi+Corso+Via+Umberto+I+Lecce"
+        }
+      ],
+      "timeline": [
+        {
+          "date": "Dom 18 Oct",
+          "dest": "Salida",
+          "title": "Vuelo Transatlántico · Santo Domingo ➔ Madrid",
+          "items": [
+            "21:15 PM Salida en vuelo IB 264 (Iberia) desde SDQ en Airbus A330",
+            "Cabina Business Lie-Flat: cena gourmet y descanso confortable en cama de 180°",
+            "Asientos contiguos asignados: Milton 04D, Aileen 04H"
+          ],
+          "lunchOptions": [
+
+          ]
+        },
+        {
+          "date": "Lun 19 Oct",
+          "dest": "París",
+          "title": "Escala VIP en Madrid & Llegada a París CDG",
+          "items": [
+            "11:35 AM Aterrizaje en Madrid Barajas (MAD T4S)",
+            "Escala holgada de 4h 10m en la Sala VIP Velázquez T4S (duchas, tapas y descanso)",
+            "15:45 PM Conexión en vuelo IB 589 a París Charles de Gaulle (CDG T3)",
+            "17:55 PM Aterrizaje en París. Chofer privado en minivan Mercedes para traslado al hotel",
+            "Noche de adaptación horaria y cena ligera en París"
+          ],
+          "lunchOptions": [
+            {
+              "name": "Sala VIP Velázquez (Madrid T4S)",
+              "query": "Iberia VIP Lounge Velazquez Madrid T4S"
+            }
+          ]
+        },
+        {
+          "date": "Mar 20 Oct",
+          "dest": "París",
+          "title": "Bienvenida del Grupo & Check-in en Le Meurice",
+          "items": [
+            "Reunión oficial del grupo de 6 viajeros en París",
+            "Check-in en Hôtel Le Meurice (Rue de Rivoli) con upgrade Diamond Club a Superior Room",
+            "Copa de champagne de bienvenida frente a las Tullerías",
+            "Tarde libre: Paseo relajado por el Jardin des Tuileries y Place Vendôme",
+            "Cena de bienvenida en bistró parisino"
+          ],
+          "lunchOptions": [
+            {
+              "name": "Restaurant Le Dalí (Le Meurice)",
+              "query": "Restaurant Le Dali Le Meurice Paris"
+            },
+            {
+              "name": "Café Marly (Louvre)",
+              "query": "Cafe Marly Paris"
+            }
+          ]
+        },
+        {
+          "date": "Mié 21 Oct",
+          "dest": "París",
+          "title": "París Cultural, Alta Joyería & Gastronomía",
+          "items": [
+            "Desayuno gourmet completo bajo las molduras doradas de Le Meurice",
+            "Mañana cultural guiada: Musée de l'Orangerie (Monet) o Palais Garnier",
+            "Almuerzo gastronómico en terraza",
+            "Tarde de compras y perfumería nicho en Rue Saint-Honoré y Place Vendôme",
+            "Cena de alta gastronomía Michelin"
+          ],
+          "lunchOptions": [
+            {
+              "name": "Loulou Paris (Tuileries)",
+              "query": "Loulou Restaurant Paris Tuileries"
+            },
+            {
+              "name": "Benoit Paris (Alain Ducasse)",
+              "query": "Benoit Paris Alain Ducasse"
+            }
+          ]
+        },
+        {
+          "date": "Jue 22 Oct",
+          "dest": "Borgoña",
+          "title": "Traslado a Borgoña & Almuerzo 3★ Lameloise",
+          "items": [
+            "10:00 AM Check-out de Le Meurice y salida hacia Borgoña en minivan privada Mercedes (315 km, ~3h 15m)",
+            "13:30 PM Almuerzo extraordinario de tres estrellas Michelin en Maison Lameloise (Chagny)",
+            "16:00 PM Check-in en Hostellerie Cèdre & Spa Beaune*****",
+            "Paseo por el casco amurallado de Beaune y Hospices de Beaune",
+            "Cena en Restaurante Le Carmin o Clos du Cèdre"
+          ],
+          "lunchOptions": [
+            {
+              "name": "Maison Lameloise (3★ Michelin, Chagny)",
+              "query": "Maison Lameloise Chagny France"
+            }
+          ]
+        },
+        {
+          "date": "Vie 23 Oct",
+          "dest": "Borgoña",
+          "title": "Maison Joseph Drouhin & Cavas Subterráneas",
+          "items": [
+            "Mañana: Visita privada y cata de vinos Premier & Grand Cru en Maison Joseph Drouhin",
+            "Exploración de las históricas cavas subterráneas de 2.5 hectáreas bajo la ciudad de Beaune",
+            "Almuerzo gastronómico entre viñedos de la Côte de Beaune",
+            "Tarde de catas exclusivas en bodegas centenarias",
+            "Cena privada maridada con grandes añadas"
+          ],
+          "lunchOptions": [
+            {
+              "name": "Clos du Cèdre (1★ Michelin)",
+              "query": "Clos du Cedre Beaune"
+            },
+            {
+              "name": "La Table du Square (Beaune)",
+              "query": "La Table du Square Beaune"
+            }
+          ]
+        },
+        {
+          "date": "Sáb 24 Oct",
+          "dest": "Borgoña",
+          "title": "Route des Grands Crus & Cena Mítica en Ma Cuisine",
+          "items": [
+            "Mañana: Terroirs legendarios de Puligny-Montrachet y Chassagne-Montrachet",
+            "Almuerzo de autor en Chassagne-Montrachet",
+            "Cata de cortesía en Maison Champy (la bodega más antigua de Borgoña, 1720)",
+            "Cena íntima en el mítico Ma Cuisine (meca mundial de coleccionistas de vino)"
+          ],
+          "lunchOptions": [
+            {
+              "name": "Le Chassagne (Chassagne-Montrachet)",
+              "query": "Restaurant Le Chassagne Chassagne Montrachet"
+            },
+            {
+              "name": "Le Montrachet Restaurant",
+              "query": "Restaurant Le Montrachet Puligny Montrachet"
+            }
+          ]
+        },
+        {
+          "date": "Dom 25 Oct",
+          "dest": "Puglia",
+          "title": "Check-out de Beaune ➔ Vuelo AF 1288 a Bari (Puglia)",
+          "items": [
+            "Desayuno en Hostellerie Cèdre y check-out a las 10:30 AM",
+            "Traslado privado en minivan Mercedes al Aeropuerto de París CDG Terminal 2G",
+            "16:40 PM Vuelo confirmado AF 1288 (Air France HOP!) directo de CDG a Bari BRI",
+            "Asientos confirmados: Milton 14D, Aileen 14F (PNR: CEV4RW)",
+            "19:00 PM Aterrizaje en Bari Karol Wojtyła. Chofer privado espera al grupo para iniciar la experiencia en Puglia"
+          ],
+          "lunchOptions": [
+            {
+              "name": "The Library Lounge (Hostellerie Cèdre)",
+              "query": "Hostellerie Cedre Beaune"
+            }
+          ]
+        },
+        {
+          "date": "Lun 26 Oct",
+          "dest": "Puglia",
+          "title": "Bienvenida en Matera & Cena en Iglesia Cueva",
+          "items": [
+            "12:00 PM Traslado panorámico por las Murgas hacia Matera (Basilicata)",
+            "14:00 PM Check-in en Sextantio Le Grotte della Civita (suites cueva excavadas en roca viva)",
+            "Tarde contemplando los barrancos y la historia milenaria de los Sassi",
+            "20:00 PM Cena privada exclusiva dentro de una iglesia-cueva del siglo XI a la luz de las velas"
+          ],
+          "lunchOptions": [
+            {
+              "name": "Trattoria del Cavaliere (Matera)",
+              "query": "Trattoria del Cavaliere Matera"
+            }
+          ]
+        },
+        {
+          "date": "Mar 27 Oct",
+          "dest": "Puglia",
+          "title": "Tour UNESCO Matera & Almuerzo en Bosque DiCecca",
+          "items": [
+            "10:00 AM Tour guiado a pie por los Sassi de Matera (locación de 007)",
+            "12:00 PM Check-out de Sextantio y salida en minivan hacia Ostuni",
+            "13:00 PM Almuerzo extraordinario en Baby DiCecca en el bosque de robles de Mercadante",
+            "16:00 PM Check-in en Masseria Le Carrube (Ostuni, 3 noches)"
+          ],
+          "lunchOptions": [
+            {
+              "name": "Baby DiCecca (Mercadante Forest)",
+              "query": "Baby DiCecca Cassano delle Murge"
+            }
+          ]
+        },
+        {
+          "date": "Mié 28 Oct",
+          "dest": "Puglia",
+          "title": "Yate Privado en Polignano a Mare & Atardecer en Ostuni",
+          "items": [
+            "09:30 AM Navegación privada de 3.5h en yate Antares 11 (35 pies) por las cuevas de Polignano y Monopoli",
+            "Nado en aguas zafiro, solárium, prosecco y snacks a bordo",
+            "17:00 PM Paseo guiado al atardecer por la Ciudad Blanca de Ostuni",
+            "Cena libre en plaza histórica con vistas a los olivares"
+          ],
+          "lunchOptions": [
+            {
+              "name": "Grotta Palazzese (Polignano)",
+              "query": "Grotta Palazzese Polignano a Mare"
+            },
+            {
+              "name": "Osteria del Tempo Perso (Ostuni)",
+              "query": "Osteria del Tempo Perso Ostuni"
+            }
+          ]
+        },
+        {
+          "date": "Jue 29 Oct",
+          "dest": "Puglia",
+          "title": "Taller de Orecchiette, Locorotondo & Alberobello",
+          "items": [
+            "11:00 AM Taller culinario práctico (3h) en finca: amasar orecchiette y recetas de huerto",
+            "Almuerzo compartido festivo con vinos de Puglia",
+            "15:00 PM Paseo por Locorotondo sobre el Valle de Itria",
+            "Visita a Alberobello (sitio UNESCO con más de 1,000 trullos tradicionales)"
+          ],
+          "lunchOptions": [
+            {
+              "name": "Trattoria Terra Madre (Alberobello)",
+              "query": "Trattoria Terra Madre Alberobello"
+            }
+          ]
+        },
+        {
+          "date": "Vie 30 Oct",
+          "dest": "Puglia",
+          "title": "Lecce Barroca, Street Food & Check-in en Palacio",
+          "items": [
+            "09:25 AM Check-out de Masseria Le Carrube y traslado a Lecce (1h)",
+            "10:30 AM Tour a pie gastronómico barroco: pasticciotto caliente, café leccese con hielo y rustico salado",
+            "Almuerzo ligero maridado con vinos Salice Salentino",
+            "15:00 PM Check-in en Palazzo Bozzi Corso (junto a Santa Croce, 2 noches)"
+          ],
+          "lunchOptions": [
+            {
+              "name": "Caffè Alvino (Piazza Sant'Oronzo)",
+              "query": "Caffe Alvino Lecce"
+            },
+            {
+              "name": "Tabisca Il Vico dei Tarocchi (Lecce)",
+              "query": "Tabisca Il Vico dei Tarocchi Lecce"
+            }
+          ]
+        },
+        {
+          "date": "Sáb 31 Oct",
+          "dest": "Puglia",
+          "title": "Cata VIP en Cantine Menhir Salento & Osteria Origano",
+          "items": [
+            "11:00 AM Recibimiento VIP por la Sra. Giusi Giracello en Cantine Menhir Salento",
+            "Visita a bodegas y viñedos en Masseria Marangelli",
+            "Almuerzo gastronómico maridado con vinos Primitivo y Negroamaro en Osteria Origano",
+            "Tarde libre en Lecce antes del vuelo de madrugada"
+          ],
+          "lunchOptions": [
+            {
+              "name": "Osteria Origano (Masseria Marangelli)",
+              "query": "Osteria Origano Menhir Salento"
+            }
+          ]
+        },
+        {
+          "date": "Dom 01 Nov",
+          "dest": "Retorno",
+          "title": "Retorno en Business · Brindisi ➔ Roma ➔ Madrid ➔ SDQ",
+          "items": [
+            "04:45 AM Check-out y traslado en minivan a Brindisi BDS (35 min)",
+            "06:20 AM Vuelo AZ 1620 (ITA Airways) BDS a Roma FCO T1 (asientos 11D/11E, llega 07:35 AM)",
+            "Desayuno y descanso de 4h 25m en Sala VIP Piazza di Spagna T1",
+            "12:00 PM Vuelo IB 648 (Iberia Business) Roma FCO a Madrid MAD T4 (asientos 02D/02F, llega 14:35)",
+            "Tránsito ágil a T4S y abordaje del vuelo transatlántico",
+            "16:15 PM Vuelo IB 263 (Iberia Business Lie-Flat) MAD T4S a Santo Domingo SDQ (asientos 02D/02H)",
+            "20:30 PM Llegada a SDQ concluyendo el gran viaje otoñal en Business Class, y enlace a San Juan"
+          ],
+          "lunchOptions": [
+            {
+              "name": "Sala VIP Piazza di Spagna (Roma FCO T1)",
+              "query": "Piazza di Spagna Lounge FCO T1 Rome"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "trip-explora-amazon-2028",
+      "status": "upcoming",
+      "category": "upcoming",
+      "title": "EXPLORA II: Gran Expedición al Amazonas",
+      "subtitle": "Travesía oceánica de ultra-lujo y selva amazónica (11 Noches)",
+      "destination": "San Juan (PR) ➔ Río Amazonas ➔ Manaus (Brasil)",
+      "country": "Caribe, Atlántico & Brasil",
+      "flag": "🚢🌴",
+      "coverImage": "https://images.unsplash.com/photo-1548574505-5e239809ee19?auto=format&fit=crop&w=1200&q=80",
+      "startDate": "2028-02-06",
+      "endDate": "2028-02-17",
+      "datesDisplay": "06 – 17 Feb 2028",
+      "durationDays": 12,
+      "climate": {
+        "summary": "Clima tropical húmedo y cálido de selva amazónica (73°F - 88°F). Lluvias tropicales y sol radiante.",
+        "tempLowF": 73,
+        "tempHighF": 88,
+        "condition": "Tropical Húmedo",
+        "icon": "🌴",
+        "packingAdvice": "Prendas de lino ligero y telas transpirables, repelente de insectos de alta gama, calzado náutico y atuendos resort-chic."
+      },
+      "activitiesConfig": {
+        "golf": false,
+        "beach": true
+      },
+      "baggageConfig": {
+        "mode": "checked",
+        "laundryAvailable": true,
+        "purpose": "ultra_luxury_cruise",
+        "formalNights": 5
+      },
+      "cruise": {
+        "ship": "EXPLORA II",
+        "line": "Explora Journeys (MSC Luxury Ocean Travel)",
+        "voyage": "A Journey through Coastal History & the Heart of the Amazon",
+        "dates": "06 Febrero – 17 Febrero 2028 (11 Noches)",
+        "bookingRef": "10194376",
+        "agency": "Modern Travel & Tours (Flavia Rivera: 787-721-3984 / flavia@moderntravelpr.com)",
+        "suite": "Penthouse Suite #7113 (Deck 7)",
+        "bed": "King Bed · Terraza Privada Frente al Océano",
+        "embarkation": "San Juan, PR (06 Feb 2028, 19:00)",
+        "disembarkation": "Manaus, Brasil (17 Feb 2028, 12:00)",
+        "virtuosoCredit": "$300 USD de crédito a bordo cortesía de Virtuoso",
+        "inclusions": [
+          "Penthouse Suite de diseño con terraza privada frente al mar y ventanales panorámicos",
+          "$300 USD de crédito a bordo cortesía de Virtuoso Experience",
+          "Vinos de reserva, champagne y cócteles de autor ilimitados en todos los restaurantes y bares",
+          "9 experiencias gastronómicas refinadas sin recargo alguno",
+          "Acceso completo al circuito termal e hidroterapia del Ocean Wellness Spa",
+          "Wi-Fi satelital Starlink de ultra-alta velocidad ilimitado",
+          "Servicio dedicado de suite host / mayordomo las 24 horas",
+          "Todas las propinas a bordo totalmente incluidas"
+        ]
+      },
+      "timeline": [
+        {
+          "date": "06 Feb 2028",
+          "title": "Embarque en San Juan, Puerto Rico",
+          "items": [
+            "Check-in preferente en el puerto de San Juan",
+            "Copa de bienvenida en la Penthouse Suite #7113",
+            "19:00 PM Zarpe rumbo al Océano Atlántico y el Río Amazonas"
+          ],
+          "lunchOptions": [
+
+          ]
+        },
+        {
+          "date": "17 Feb 2028",
+          "title": "Llegada al Corazón del Amazonas (Manaus, Brasil)",
+          "items": [
+            "Navegación por el encuentro de las aguas (Río Negro y Río Solimões)",
+            "12:00 PM Llegada a Manaus, noche a bordo y exploración guiada"
+          ],
+          "lunchOptions": [
+
+          ]
+        }
+      ]
+    }
+  ],
+  "discoveredFilesCount": 31
+}
