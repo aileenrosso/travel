@@ -892,11 +892,199 @@ def build_pwa!
             to { opacity: 1; transform: translateY(0); }
         }
 
+        .print-checklist-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #0F1D2E 0%, #1E293B 100%);
+            color: #FFFFFF;
+            border: 1px solid #0F1D2E;
+            border-radius: 14px;
+            padding: 12px 18px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 14px;
+            box-shadow: 0 4px 14px rgba(15, 29, 46, 0.15);
+            transition: var(--transition);
+        }
+        .print-checklist-btn:active {
+            transform: scale(0.98);
+            background: #0F1D2E;
+        }
+
+        #printable-packing-area {
+            display: none;
+        }
+
         @media print {
-            header, .breadcrumb-bar, .bottom-dock, .header-actions, .toast, button {
+            @page {
+                size: letter portrait;
+                margin: 10mm 12mm;
+            }
+
+            body::after { display: none !important; }
+
+            /* When printing only checklists */
+            body.print-only-checklists .app-shell,
+            body.print-only-checklists header,
+            body.print-only-checklists .bottom-dock,
+            body.print-only-checklists .screen,
+            body.print-only-checklists .breadcrumb-bar,
+            body.print-only-checklists .toast {
                 display: none !important;
             }
-            .screen {
+
+            body.print-only-checklists #printable-packing-area {
+                display: block !important;
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                background: #FFFFFF !important;
+                color: #111827 !important;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            .print-document {
+                width: 100%;
+            }
+
+            .print-main-header {
+                border-bottom: 2px solid #0F1D2E;
+                padding-bottom: 8px;
+                margin-bottom: 12px;
+            }
+
+            .print-logo-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-end;
+                margin-bottom: 6px;
+            }
+
+            .print-trip-summary {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 4px 16px;
+                font-size: 8.5pt;
+                color: #374151;
+                background: #F9FAFB;
+                padding: 8px 12px;
+                border-radius: 6px;
+                border: 1px solid #E5E7EB;
+            }
+
+            .print-traveler-section {
+                margin-bottom: 16px;
+                break-inside: avoid;
+            }
+
+            .print-traveler-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background: #F3F4F6;
+                padding: 6px 12px;
+                border-left: 4px solid #C9A84C;
+                border-radius: 4px;
+                margin-bottom: 8px;
+                margin-top: 6px;
+            }
+
+            .print-category-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px 12px;
+            }
+
+            .print-category-card {
+                border: 1px solid #E5E7EB;
+                border-radius: 6px;
+                padding: 7px 9px;
+                break-inside: avoid;
+                page-break-inside: avoid;
+                background: #FFFFFF;
+            }
+
+            .print-category-title {
+                font-size: 8.5pt;
+                font-weight: 700;
+                color: #1F2937;
+                border-bottom: 1px solid #E5E7EB;
+                padding-bottom: 3px;
+                margin-bottom: 5px;
+                display: flex;
+                justify-content: space-between;
+            }
+
+            .print-items-list {
+                display: flex;
+                flex-direction: column;
+                gap: 3px;
+            }
+
+            .print-item-row {
+                display: flex;
+                align-items: flex-start;
+                gap: 6px;
+                font-size: 8pt;
+                line-height: 1.25;
+            }
+
+            .print-checkbox {
+                display: inline-block;
+                width: 12px;
+                height: 12px;
+                min-width: 12px;
+                border: 1.2px solid #374151;
+                border-radius: 2px;
+                text-align: center;
+                line-height: 10px;
+                font-size: 9px;
+                font-weight: 900;
+                margin-top: 1px;
+            }
+
+            .print-checkbox.checked {
+                background: #F3F4F6;
+                color: #059669;
+            }
+
+            .print-item-label {
+                color: #111827;
+                flex: 1;
+            }
+
+            .print-item-label.checked-text {
+                color: #374151;
+            }
+
+            .print-sub {
+                display: block;
+                font-size: 7pt;
+                color: #6B7280;
+            }
+
+            .print-page-break {
+                page-break-before: always;
+                break-before: page;
+            }
+
+            /* Regular print fallback */
+            body:not(.print-only-checklists) header,
+            body:not(.print-only-checklists) .breadcrumb-bar,
+            body:not(.print-only-checklists) .bottom-dock,
+            body:not(.print-only-checklists) .header-actions,
+            body:not(.print-only-checklists) .toast,
+            body:not(.print-only-checklists) button {
+                display: none !important;
+            }
+            body:not(.print-only-checklists) .screen {
                 display: block !important;
                 position: static !important;
                 opacity: 1 !important;
@@ -904,7 +1092,6 @@ def build_pwa!
                 padding: 10px 0 !important;
                 page-break-after: always;
             }
-            body::after { display: none !important; }
         }
         @keyframes spin {
             from { transform: rotate(0deg); }
@@ -924,7 +1111,7 @@ def build_pwa!
             </div>
             <div class="header-actions">
                 <button class="header-btn" id="sync-btn" onclick="syncAndRefresh()"><span id="sync-icon" style="font-size: 0.9rem; display: inline-block;">🔄</span> <span id="sync-text">Sincronizar</span></button>
-                <button class="header-btn" onclick="window.print()"><span style="font-size: 0.9rem;">🖨️</span> Imprimir</button>
+                <button class="header-btn" onclick="handleHeaderPrint()"><span style="font-size: 0.9rem;">🖨️</span> Imprimir</button>
             </div>
         </header>
 
@@ -1910,6 +2097,39 @@ html_content << <<-'HTML_FOOTER'
                     </div>
                 </div>
 
+                <!-- Baggage Mode Selector (Carry-on vs Bodega) -->
+                <div class="packing-config-card" style="margin-bottom: 12px; padding: 12px 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.04em;">
+                            🧳 Categoría de Equipaje
+                        </span>
+                        <span style="font-size: 0.72rem; font-weight: 700; color: var(--gold-dark); background: var(--gold-light); padding: 2px 8px; border-radius: 8px;">
+                            ${config.mode === 'carry_on' ? '🎒 Solo Carry-On (Mano)' : '🧳 Maleta en Bodega (Facturada)'}
+                        </span>
+                    </div>
+
+                    <div class="segmented-control" style="margin-bottom: 8px;">
+                        <button class="segment-btn ${config.mode !== 'carry_on' ? 'active' : ''}" onclick="setTripBaggageMode('${trip.id}', 'checked')">
+                            🧳 Maleta en Bodega
+                        </button>
+                        <button class="segment-btn ${config.mode === 'carry_on' ? 'active' : ''}" onclick="setTripBaggageMode('${trip.id}', 'carry_on')">
+                            🎒 Solo Carry-On
+                        </button>
+                    </div>
+
+                    <div style="font-size: 0.72rem; color: var(--text-muted); line-height: 1.35;">
+                        ${config.mode === 'carry_on' 
+                            ? '⚡ <strong>Modo Carry-On activo:</strong> Líquidos restringidos a envases ≤100 ml en bolsa transparente. Equipaje de cabina sin esperas en carrusel.' 
+                            : '✨ <strong>Modo Maleta en Bodega activo:</strong> Franquicia Business (2x gratis de 32 kg c/u con JetBlue Mosaic 3 / Iberia Business). Espacio completo para ropa formal, calzado y palos de golf.'}
+                    </div>
+                </div>
+
+                <!-- Print All Checklists Button -->
+                <button class="print-checklist-btn" onclick="printPackingChecklists('${trip.id}')">
+                    <span style="font-size: 1.1rem;">🖨️</span>
+                    <span>Imprimir Checklists (Milton, Aileen y Compartida)</span>
+                </button>
+
                 <!-- Traveler Selector Tabs -->
                 <div class="traveler-selector">
                     <button class="traveler-selector-btn ${currentPackingTraveler === 'milton' ? 'active' : ''}" onclick="switchPackingTraveler('milton', '${trip.id}')">
@@ -1980,8 +2200,172 @@ html_content << <<-'HTML_FOOTER'
                 trip.baggageConfig.mode = mode;
                 saveState();
                 refreshAllPackingComponents(tripId);
-                showToast(`🧳 Modo ajustado a: ${mode === 'carry_on' ? 'Carry-On' : 'Bodega'}`);
+                showToast(`🧳 Modo ajustado a: ${mode === 'carry_on' ? 'Solo Carry-On' : 'Maleta en Bodega'}`);
             }
+        }
+
+        function handleHeaderPrint() {
+            const activeTrip = (appData.trips || []).find(t => t.status === 'active') || (appData.trips || [])[0];
+            const isPackingView = document.getElementById('view-packing')?.classList.contains('active') ||
+                (document.getElementById('view-detail')?.classList.contains('active') && document.getElementById('detail-tab-packing')?.style.display !== 'none');
+            
+            if (activeTrip && isPackingView) {
+                printPackingChecklists(activeTrip.id);
+            } else if (activeTrip && confirm("¿Deseas imprimir las listas de empaque (Milton, Aileen y Compartida)?\n\n• Pulsa ACEPTAR para imprimir las Listas de Empaque.\n• Pulsa CANCELAR para imprimir la vista general del itinerario.")) {
+                printPackingChecklists(activeTrip.id);
+            } else {
+                window.print();
+            }
+        }
+
+        function printPackingChecklists(tripId) {
+            const trip = (appData.trips || []).find(t => t.id === tripId) || (appData.trips || [])[0];
+            if (!trip) return;
+
+            const acts = trip.activitiesConfig || { golf: true, beach: true };
+            const config = trip.baggageConfig || { mode: 'checked' };
+            const storageKey = `packing_checked_${trip.id}`;
+            const checkedState = JSON.parse(localStorage.getItem(storageKey) || '{}');
+
+            let printArea = document.getElementById('printable-packing-area');
+            if (!printArea) {
+                printArea = document.createElement('div');
+                printArea.id = 'printable-packing-area';
+                document.body.appendChild(printArea);
+            }
+
+            const mStats = getTravelerPackingStats(trip.id, 'milton');
+            const aStats = getTravelerPackingStats(trip.id, 'aileen');
+            const sStats = getTravelerPackingStats(trip.id, 'shared');
+
+            const renderTravelerPrintSection = (travelerKey, title, icon, stats) => {
+                const spec = TRAVELER_PACKING_SPECS[travelerKey];
+                if (!spec) return '';
+
+                const categories = [];
+                spec.categories.forEach(cat => {
+                    if (cat.tag === 'golf' && !acts.golf) return;
+                    if (cat.tag === 'beach' && !acts.beach) return;
+
+                    const filteredItems = cat.items.filter(it => {
+                        if (it.tag === 'golf' && !acts.golf) return false;
+                        if (it.tag === 'beach' && !acts.beach) return false;
+                        return true;
+                    });
+
+                    if (filteredItems.length > 0) {
+                        categories.push({
+                            name: cat.name,
+                            icon: cat.icon,
+                            tag: cat.tag,
+                            badge: cat.badge,
+                            items: filteredItems
+                        });
+                    }
+                });
+
+                // Custom items
+                const customItems = (trip.customPackingList || []).filter(c => c.traveler === travelerKey || (!c.traveler && travelerKey === 'shared'));
+                if (customItems.length > 0) {
+                    categories.push({
+                        name: "Artículos Personalizados Añadidos",
+                        icon: "✨",
+                        items: customItems
+                    });
+                }
+
+                return `
+                    <div class="print-traveler-section">
+                        <div class="print-traveler-header">
+                            <div style="font-size: 13pt; font-weight: 800; color: #0F1D2E;">
+                                ${icon} ${title}
+                            </div>
+                            <div style="font-size: 9pt; font-weight: 700; color: #4B5563;">
+                                ${stats.checked} de ${stats.total} empacados (${stats.pct}%)
+                            </div>
+                        </div>
+                        <div class="print-category-grid">
+                            ${categories.map(cat => {
+                                let catChecked = 0;
+                                cat.items.forEach(it => { if (checkedState[it.id]) catChecked++; });
+                                return `
+                                    <div class="print-category-card">
+                                        <div class="print-category-title">
+                                            <span>${cat.icon} <strong>${cat.name}</strong></span>
+                                            <span style="font-size: 7.5pt; color: #6B7280; font-weight: 600;">${catChecked}/${cat.items.length}</span>
+                                        </div>
+                                        <div class="print-items-list">
+                                            ${cat.items.map(it => {
+                                                const isChecked = !!checkedState[it.id];
+                                                return `
+                                                    <div class="print-item-row ${isChecked ? 'is-checked' : ''}">
+                                                        <span class="print-checkbox ${isChecked ? 'checked' : ''}">
+                                                            ${isChecked ? '✓' : ''}
+                                                        </span>
+                                                        <span class="print-item-label ${isChecked ? 'checked-text' : ''}">
+                                                            ${it.text}
+                                                            ${it.sub ? `<small class="print-sub">${it.sub}</small>` : ''}
+                                                        </span>
+                                                    </div>
+                                                `;
+                                            }).join('')}
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            };
+
+            const nowStr = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+
+            printArea.innerHTML = `
+                <div class="print-document">
+                    <div class="print-main-header">
+                        <div class="print-logo-row">
+                            <div style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 18pt; font-weight: 700; color: #0F1D2E; letter-spacing: 0.5px;">
+                                🧭 TRAVEL PLANNER · LISTAS DE EMPAQUE OFICIALES
+                            </div>
+                            <div style="font-size: 8.5pt; color: #6B7280; text-align: right;">
+                                Fecha de Impresión: ${nowStr}
+                            </div>
+                        </div>
+                        
+                        <div class="print-trip-summary">
+                            <div><strong>Viaje:</strong> ${trip.title}</div>
+                            <div><strong>Fechas:</strong> ${trip.datesDisplay || (trip.startDate + ' a ' + trip.endDate)} (${trip.durationDays || 12} Días)</div>
+                            <div><strong>Destino:</strong> ${trip.destination}</div>
+                            <div><strong>Previsión Clima:</strong> ${trip.climate?.tempLowF || 55}°F a ${trip.climate?.tempHighF || 84}°F · ${trip.climate?.condition || 'Soleado'}</div>
+                            <div><strong>Modalidad Equipaje:</strong> ${config.mode === 'carry_on' ? '🎒 Solo Carry-On (Equipaje de Mano)' : '🧳 Maleta en Bodega (Checked Baggage Business)'}</div>
+                            <div><strong>Actividades:</strong> ${acts.golf ? '⛳ Golf Activo' : 'Sin Golf'} &nbsp;|&nbsp; ${acts.beach ? '🏖️ Playa/Piscina Activa' : 'Sin Playa'}</div>
+                        </div>
+                    </div>
+
+                    <!-- 1. MILTON CRUZ -->
+                    ${renderTravelerPrintSection('milton', 'Milton Cruz', '👔', mStats)}
+
+                    <div class="print-page-break"></div>
+
+                    <!-- 2. AILEEN ROSSO -->
+                    ${renderTravelerPrintSection('aileen', 'Aileen Rosso', '👗', aStats)}
+
+                    <div class="print-page-break"></div>
+
+                    <!-- 3. EQUIPAJE COMPARTIDO & VIP -->
+                    ${renderTravelerPrintSection('shared', 'Equipaje Compartido & VIP', '🧳', sStats)}
+                </div>
+            `;
+
+            document.body.classList.add('print-only-checklists');
+
+            window.onafterprint = () => {
+                document.body.classList.remove('print-only-checklists');
+            };
+
+            setTimeout(() => {
+                window.print();
+            }, 120);
         }
 
         function toggleTripLaundry(tripId, val) {
@@ -2061,11 +2445,16 @@ html_content << <<-'HTML_FOOTER'
                 list.style.borderRadius = '16px';
                 list.style.padding = '4px 14px';
 
+                const isCarryOn = (trip.baggageConfig?.mode === 'carry_on');
                 cat.items.forEach(item => {
                     const isChecked = !!checkedState[item.id];
                     const row = document.createElement('div');
                     row.className = `check-item-ios ${isChecked ? 'checked' : ''}`;
                     row.onclick = () => togglePackingItemState(trip.id, item.id);
+
+                    const isLiquid = /perfume|shampoo|conditioner|pasta dientes|protector|crema|bloqueador/i.test(item.text);
+                    const carryOnBadge = (isCarryOn && isLiquid) ? `<span style="font-size: 0.62rem; background: #FEF3C7; color: #B45309; padding: 2px 6px; border-radius: 6px; margin-left: 6px; font-weight: 700;">🧴 Máx 100ml</span>` : '';
+
                     row.innerHTML = `
                         <div class="checkbox-ios">
                             <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
@@ -2074,6 +2463,7 @@ html_content << <<-'HTML_FOOTER'
                             <div class="check-text-title">
                                 ${item.text}
                                 ${item.badge ? `<span style="font-size: 0.65rem; background: #FEF3C7; color: #B45309; padding: 2px 6px; border-radius: 6px; margin-left: 6px; font-weight: 700;">${item.badge}</span>` : ''}
+                                ${carryOnBadge}
                             </div>
                             ${item.sub ? `<div class="check-text-desc">${item.sub}</div>` : ''}
                         </div>

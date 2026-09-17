@@ -72,6 +72,7 @@ Thread.new do
     if current_snapshot != last_snapshot
       puts "\n[OneDrive Watcher] Detected changes in files. Re-syncing automatically..."
       begin
+        load File.join(TRAVEL_DIR, "build_index.rb")
         build_pwa!
         last_snapshot = current_snapshot
         puts "[OneDrive Watcher] Auto-sync complete at #{Time.now.strftime('%H:%M:%S')}."
