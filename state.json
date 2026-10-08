@@ -1,7 +1,7 @@
 {
   "version": "5.4",
   "appName": "Travel Planner",
-  "lastUpdated": "2026-09-16 20:11:54",
+  "lastUpdated": "2026-10-08 00:16:52",
   "travelersProfile": {
     "primaryTravelers": "Milton Cruz & Aileen Rosso",
     "groupMembers": [
@@ -90,8 +90,8 @@
   "trips": [
     {
       "id": "trip-spain-andalucia-sep2026",
-      "status": "active",
-      "category": "active",
+      "status": "past",
+      "category": "past",
       "title": "España & Andalucía: Sotogrande y Sevilla",
       "subtitle": "Vuelos SJU-SDQ-MAD en Business, SO/ Sotogrande 5*, Hotel Colón en Sevilla, AVE Confort y Rosewood Villa Magna 5* GL en Madrid",
       "destination": "Sotogrande, Sevilla & Madrid (España)",
@@ -520,12 +520,13 @@
           "cost": "228.40 € (Total 2 plazas)",
           "notes": "Cierre del acceso al tren 2 minutos antes de la salida."
         }
-      ]
+      ],
+      "completed": true
     },
     {
       "id": "trip-europe-autumn-2026",
-      "status": "upcoming",
-      "category": "upcoming",
+      "status": "active",
+      "category": "active",
       "title": "Grand European Autumn: Paris, Burgundy & Puglia",
       "subtitle": "Gira de otoño por Francia e Italia con amigos (Grupo de 6)",
       "destination": "París, Borgoña & Puglia (Francia e Italia)",
@@ -1077,7 +1078,8 @@
             }
           ]
         }
-      ]
+      ],
+      "completed": false
     },
     {
       "id": "trip-explora-amazon-2028",
@@ -1158,7 +1160,8 @@
 
           ]
         }
-      ]
+      ],
+      "completed": false
     }
   ],
   "discoveredFilesCount": 31

@@ -5,35 +5,53 @@ require 'date'
 ONEDRIVE_DIR = "/Users/aileenrosso/Library/CloudStorage/OneDrive-Medholdings,Inc/Personal Documentos/Antigravity"
 LOCAL_TRAVEL_DIR = File.expand_path(File.dirname(__FILE__))
 
-def purge_past_events_and_files!(state_data, current_date = Date.today)
-  puts "Checking for past events and files before #{current_date}..."
+def archive_and_classify_trips!(state_data, current_date = Date.today)
+  puts "Archiving and classifying trips as of #{current_date} (preserving all past trips & files)..."
   
-  dirs_to_check = [LOCAL_TRAVEL_DIR, ONEDRIVE_DIR].uniq.select { |d| Dir.exist?(d) }
-  
-  # 1. Look for known past event files (e.g. Sept 9)
-  past_patterns = ["*Sept 9*", "*Sep 9*", "*09Sep*", "*Sept09*"]
-  dirs_to_check.each do |dir|
-    past_patterns.each do |pat|
-      Dir.glob(File.join(dir, "**", pat)).each do |f|
-        if File.file?(f) && !f.include?(".git")
-          puts "[PURGE] Deleting past event file: #{f}"
-          File.delete(f) rescue puts "Could not delete #{f}"
-        end
+  (state_data["trips"] || []).each do |trip|
+    begin
+      start_d = Date.parse(trip["startDate"]) rescue nil
+      end_d = Date.parse(trip["endDate"]) rescue nil
+
+      if end_d && end_d < current_date
+        trip["status"] = "past"
+        trip["category"] = "past"
+        trip["completed"] = true
+        puts "[ARCHIVE] Saved past trip in archive: #{trip['title']} (ended #{trip['endDate']})"
+      elsif start_d && end_d && start_d <= current_date && end_d >= current_date
+        trip["status"] = "active"
+        trip["category"] = "active"
+        trip["completed"] = false
+        puts "[ACTIVE] Current in-progress trip: #{trip['title']}"
+      elsif start_d && start_d > current_date
+        trip["status"] = "upcoming"
+        trip["category"] = "upcoming"
+        trip["completed"] = false
+        puts "[UPCOMING] Scheduled upcoming trip: #{trip['title']} (starts #{trip['startDate']})"
       end
+    rescue => e
+      puts "Error parsing trip dates: #{e.message}"
     end
   end
 
-  # 2. Automatically remove past trips from state if end date has passed
-  before_count = (state_data["trips"] || []).size
-  state_data["trips"] = (state_data["trips"] || []).reject do |trip|
-    end_d = Date.parse(trip["endDate"]) rescue nil
-    is_past = end_d && end_d < current_date
-    if is_past
-      puts "[PURGE] Removing expired past trip from active state: #{trip['title']} (ended #{trip['endDate']})"
+  # If no trip is currently in progress, promote earliest upcoming trip to active hero
+  active_trips = (state_data["trips"] || []).select { |t| t["status"] == "active" }
+  if active_trips.empty?
+    earliest_upcoming = (state_data["trips"] || [])
+      .select { |t| t["status"] == "upcoming" }
+      .sort_by { |t| t["startDate"] || "9999" }
+      .first
+    if earliest_upcoming
+      earliest_upcoming["status"] = "active"
+      earliest_upcoming["category"] = "active"
+      puts "[HERO] Promoted earliest upcoming trip to active hero: #{earliest_upcoming['title']}"
     end
-    is_past
   end
-  puts "Active & upcoming trips remaining: #{state_data['trips'].size} (purged #{before_count - state_data['trips'].size})"
+
+  past_count = (state_data["trips"] || []).count { |t| t["status"] == "past" }
+  active_count = (state_data["trips"] || []).count { |t| t["status"] == "active" }
+  upcoming_count = (state_data["trips"] || []).count { |t| t["status"] == "upcoming" }
+  puts "Trips breakdown: #{active_count} active hero, #{upcoming_count} upcoming, #{past_count} past archived."
 end
 
 def ingest_directory_updates(state_data)
@@ -47,37 +65,7 @@ def ingest_directory_updates(state_data)
   end
 
   today = Date.today
-  purge_past_events_and_files!(state_data, today)
-
-  # Automatically evaluate and update trip status based on today's date
-  (state_data["trips"] || []).each do |trip|
-    begin
-      start_d = Date.parse(trip["startDate"]) rescue nil
-      end_d = Date.parse(trip["endDate"]) rescue nil
-
-      if end_d && end_d < today
-        trip["status"] = "past"
-        trip["category"] = "past"
-      elsif start_d && end_d && start_d <= today && end_d >= today
-        trip["status"] = "active"
-        trip["category"] = "active"
-      elsif start_d && start_d > today
-        trip["status"] = "upcoming"
-        trip["category"] = "upcoming"
-      end
-    rescue => e
-    end
-  end
-
-  # The earliest upcoming trip is the Active / Immediate hero
-  active_trips = (state_data["trips"] || []).select { |t| t["status"] == "active" }
-  if active_trips.empty?
-    upcoming_trips = (state_data["trips"] || []).select { |t| t["status"] == "upcoming" }.sort_by { |t| t["startDate"] || "9999" }
-    if upcoming_trips.any?
-      upcoming_trips.first["status"] = "active"
-      upcoming_trips.first["category"] = "active"
-    end
-  end
+  archive_and_classify_trips!(state_data, today)
 
   state_data["version"] = "5.4"
   state_data["lastUpdated"] = Time.now.strftime("%Y-%m-%d %H:%M:%S")
@@ -377,6 +365,80 @@ def build_pwa!
             color: #FFF;
             border: 1px solid rgba(255, 255, 255, 0.25);
             backdrop-filter: blur(8px);
+        }
+        .badge-status.past {
+            background: rgba(71, 85, 105, 0.9);
+            color: #F8FAFC;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(8px);
+        }
+        .past-year-group {
+            margin-bottom: 24px;
+        }
+        .past-year-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 18px 0 12px 0;
+            padding-bottom: 6px;
+            border-bottom: 1.5px solid var(--gold-border);
+        }
+        .past-year-title {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .past-year-badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            background: var(--gold-light);
+            color: var(--gold-dark);
+            padding: 2px 10px;
+            border-radius: 12px;
+        }
+        .dash-segmented-bar {
+            display: flex;
+            background: rgba(31, 27, 24, 0.05);
+            padding: 4px;
+            border-radius: 14px;
+            margin: 18px 0 16px 0;
+            gap: 4px;
+        }
+        .dash-segment-btn {
+            flex: 1;
+            padding: 9px 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .dash-segment-btn.active {
+            background: #FFFFFF;
+            color: var(--text-main);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+        .dash-segment-btn .badge-pill {
+            font-size: 0.68rem;
+            padding: 1px 7px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.06);
+            color: var(--text-muted);
+        }
+        .dash-segment-btn.active .badge-pill {
+            background: var(--gold-light);
+            color: var(--gold-dark);
         }
         .weather-pill {
             display: inline-flex;
@@ -1130,11 +1192,40 @@ def build_pwa!
             <section id="screen-dashboard" class="screen active">
                 <div id="dashboard-hero-container"></div>
                 
-                <div class="dashboard-section-title">
-                    <span>Próximos Viajes Programados</span>
-                    <span id="upcoming-count-badge" style="background: rgba(31,27,24,0.06); padding: 2px 8px; border-radius: 10px;">0</span>
+                <!-- Segmented Tabs for Dashboard: Próximos vs Anteriores -->
+                <div class="dash-segmented-bar">
+                    <button class="dash-segment-btn active" id="dashtab-upcoming-btn" onclick="switchDashboardTab('upcoming')">
+                        🚀 Próximos Viajes <span class="badge-pill" id="badge-upcoming-count">0</span>
+                    </button>
+                    <button class="dash-segment-btn" id="dashtab-past-btn" onclick="switchDashboardTab('past')">
+                        🏛️ Viajes Anteriores <span class="badge-pill" id="badge-past-count">0</span>
+                    </button>
                 </div>
-                <div id="dashboard-upcoming-container" class="trip-card-grid"></div>
+
+                <!-- Sub-tab 1: Upcoming Trips -->
+                <div id="dashboard-subview-upcoming">
+                    <div class="dashboard-section-title">
+                        <span>Próximas Salidas Programadas</span>
+                        <span id="upcoming-count-badge" style="background: rgba(31,27,24,0.06); padding: 2px 8px; border-radius: 10px;">0</span>
+                    </div>
+                    <div id="dashboard-upcoming-container" class="trip-card-grid"></div>
+
+                    <!-- Bottom Quicklink to Past Trips -->
+                    <div id="dashboard-past-quicklink" style="margin-top: 24px; text-align: center; padding: 14px; background: rgba(31,27,24,0.03); border: 1px dashed var(--border-subtle); border-radius: 16px; cursor: pointer;" onclick="switchDashboardTab('past')">
+                        <span style="font-size: 0.82rem; font-weight: 700; color: var(--gold-dark);">
+                            🏛️ Ver Historial de Viajes Anteriores (<span id="quicklink-past-count">0</span> archivados) ›
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Sub-tab 2: Past Trips Archive (on Dashboard) -->
+                <div id="dashboard-subview-past" style="display: none;">
+                    <div class="dashboard-section-title">
+                        <span>Bitácora de Viajes Concluidos</span>
+                        <span id="past-count-badge" style="background: rgba(31,27,24,0.06); padding: 2px 8px; border-radius: 10px;">0</span>
+                    </div>
+                    <div id="dashboard-past-container"></div>
+                </div>
             </section>
 
             <!-- Screen 2: Single Trip Detail View -->
@@ -1155,7 +1246,16 @@ def build_pwa!
                 <div id="detail-tab-packing" class="detail-tab-content" style="display: none;"></div>
             </section>
 
-            <!-- Screen 3: Global Smart Packing Hub -->
+            <!-- Screen 3: Dedicated Past Trips Archive Screen -->
+            <section id="screen-past-trips" class="screen">
+                <div style="margin-bottom: 18px;">
+                    <h1 style="font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 700;">Archivo Histórico de Viajes</h1>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Bitácora y memorias ordenadas por año y fecha</p>
+                </div>
+                <div id="past-trips-screen-container"></div>
+            </section>
+
+            <!-- Screen 4: Global Smart Packing Hub -->
             <section id="screen-packing" class="screen">
                 <div style="margin-bottom: 18px;">
                     <h1 style="font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 700;">Motor de Empaque Inteligente</h1>
@@ -1164,7 +1264,7 @@ def build_pwa!
                 <div id="global-packing-content"></div>
             </section>
 
-            <!-- Screen 4: Traveler Profile & Emergency Hotlines -->
+            <!-- Screen 5: Traveler Profile & Emergency Hotlines -->
             <section id="screen-docs" class="screen">
                 <div style="margin-bottom: 18px;">
                     <h1 style="font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 700;">Perfil VIP & Hotlines</h1>
@@ -1185,6 +1285,10 @@ def build_pwa!
             <button class="dock-btn" id="dock-btn-active-trip" onclick="goToActiveTrip()">
                 <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 Próximo
+            </button>
+            <button class="dock-btn" id="dock-btn-past-trips" onclick="switchMainTab('past-trips')">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 8 8 12 12 16"/><line x1="16" y1="12" x2="8" y2="12"/></svg>
+                Anteriores
             </button>
             <button class="dock-btn" id="dock-btn-packing" onclick="switchMainTab('packing')">
                 <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
@@ -1373,6 +1477,7 @@ html_content << <<-'HTML_FOOTER'
 
         function renderAll() {
             renderDashboard();
+            renderPastTripsScreen();
             renderGlobalPacking();
             renderDocs();
         }
@@ -1392,11 +1497,35 @@ html_content << <<-'HTML_FOOTER'
             const breadcrumbBar = document.getElementById('breadcrumb-bar');
             if (breadcrumbBar) breadcrumbBar.classList.remove('active');
 
+            if (tabId === 'past-trips') {
+                renderPastTripsScreen();
+            }
+
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        function switchDashboardTab(tabId) {
+            const upBtn = document.getElementById('dashtab-upcoming-btn');
+            const pastBtn = document.getElementById('dashtab-past-btn');
+            const upView = document.getElementById('dashboard-subview-upcoming');
+            const pastView = document.getElementById('dashboard-subview-past');
+
+            if (tabId === 'past') {
+                if (upBtn) upBtn.classList.remove('active');
+                if (pastBtn) pastBtn.classList.add('active');
+                if (upView) upView.style.display = 'none';
+                if (pastView) pastView.style.display = 'block';
+            } else {
+                if (upBtn) upBtn.classList.add('active');
+                if (pastBtn) pastBtn.classList.remove('active');
+                if (upView) upView.style.display = 'block';
+                if (pastView) pastView.style.display = 'none';
+            }
+        }
+
         function goToActiveTrip() {
-            const activeTrip = (appData.trips || []).find(t => t.status === 'active') || (appData.trips || [])[0];
+            const trips = appData.trips || [];
+            const activeTrip = trips.find(t => t.status === 'active') || trips.find(t => t.status === 'upcoming') || trips[0];
             if (activeTrip) {
                 openTripDetail(activeTrip.id);
             } else {
@@ -1447,32 +1576,47 @@ html_content << <<-'HTML_FOOTER'
         function renderDashboard() {
             const heroContainer = document.getElementById('dashboard-hero-container');
             const upcomingContainer = document.getElementById('dashboard-upcoming-container');
-            const upcomingCountEl = document.getElementById('upcoming-count-badge');
+            const pastContainer = document.getElementById('dashboard-past-container');
 
             if (!heroContainer || !upcomingContainer) return;
 
             const trips = appData.trips || [];
-            const activeTrip = trips.find(t => t.status === 'active') || trips[0];
-            const upcomingTrips = trips.filter(t => t.id !== (activeTrip ? activeTrip.id : ''));
+            const activeTrip = trips.find(t => t.status === 'active') || trips.find(t => t.status !== 'past') || trips[0];
+            const upcomingTrips = trips.filter(t => t.status === 'upcoming' && t.id !== (activeTrip ? activeTrip.id : ''));
+            const pastTrips = trips.filter(t => t.status === 'past');
 
-            if (upcomingCountEl) upcomingCountEl.textContent = upcomingTrips.length;
+            // Badges
+            const badgeUpcoming = document.getElementById('badge-upcoming-count');
+            const badgePast = document.getElementById('badge-past-count');
+            const countUpcomingBadge = document.getElementById('upcoming-count-badge');
+            const countPastBadge = document.getElementById('past-count-badge');
+            const quicklinkPast = document.getElementById('quicklink-past-count');
+
+            const totalUpcoming = (activeTrip && activeTrip.status !== 'past' ? 1 : 0) + upcomingTrips.length;
+            if (badgeUpcoming) badgeUpcoming.textContent = totalUpcoming;
+            if (badgePast) badgePast.textContent = pastTrips.length;
+            if (countUpcomingBadge) countUpcomingBadge.textContent = upcomingTrips.length;
+            if (countPastBadge) countPastBadge.textContent = pastTrips.length;
+            if (quicklinkPast) quicklinkPast.textContent = pastTrips.length;
 
             // 1. Hero Card: Active / Immediate Next Trip
             if (activeTrip) {
                 const depDate = new Date(activeTrip.startDate + 'T00:00:00');
                 const now = new Date();
                 const diffDays = Math.ceil((depDate - now) / (1000 * 60 * 60 * 24));
-                const countdownStr = diffDays > 0 ? `✈️ Faltan ${diffDays} días` : (diffDays === 0 ? '✈️ ¡Salida Hoy!' : '🌟 En Progreso');
+                const countdownStr = diffDays > 0 ? `✈️ Faltan ${diffDays} días` : (diffDays === 0 ? '✈️ ¡Salida Hoy!' : (activeTrip.status === 'past' ? '✓ Realizado' : '🌟 En Progreso'));
 
                 heroContainer.innerHTML = `
                     <div class="trip-card-hero" onclick="openTripDetail('${activeTrip.id}')">
                         <img src="${activeTrip.coverImage}" alt="${activeTrip.title}" onerror="this.style.display='none'">
                         <div class="trip-card-hero-overlay">
                             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                                <span class="badge-status active">PRÓXIMA SALIDA INMEDIATA</span>
+                                <span class="badge-status ${activeTrip.status === 'past' ? 'past' : 'active'}">
+                                    ${activeTrip.status === 'past' ? '✓ VIAJE ARCHIVADO' : 'PRÓXIMA SALIDA INMEDIATA'}
+                                </span>
                                 <div class="weather-pill">
                                     <span>${activeTrip.climate?.icon || '🌤️'}</span>
-                                    <span>${activeTrip.climate?.tempLowF || 64}°F / ${activeTrip.climate?.tempHighF || 84}°F</span>
+                                    <span>${activeTrip.climate?.tempLowF || 39}°F / ${activeTrip.climate?.tempHighF || 72}°F</span>
                                 </div>
                             </div>
                             <div>
@@ -1497,52 +1641,173 @@ html_content << <<-'HTML_FOOTER'
 
             // 2. Upcoming Trips Grid
             upcomingContainer.innerHTML = '';
-            upcomingTrips.forEach(t => {
-                const card = document.createElement('div');
-                card.className = 'trip-card-item';
-                card.onclick = () => openTripDetail(t.id);
-
-                const climateHtml = t.climate ? `
-                    <span class="weather-pill-light">
-                        <span>${t.climate.icon || '🌤️'}</span> ${t.climate.tempLowF || 64}°F - ${t.climate.tempHighF || 84}°F
-                    </span>
-                ` : '';
-
-                card.innerHTML = `
-                    <div class="trip-card-cover-box">
-                        <img src="${t.coverImage}" alt="${t.title}" onerror="this.parentElement.style.display='none'">
-                        <div style="position: absolute; top: 12px; left: 12px;">
-                            <span class="badge-status upcoming">PROGRAMADO</span>
-                        </div>
-                        <div style="position: absolute; top: 12px; right: 12px;">
-                            <span style="background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); color: #FFF; font-size: 0.68rem; font-weight: 700; padding: 4px 10px; border-radius: 20px;">${t.durationDays} Días</span>
-                        </div>
+            if (upcomingTrips.length === 0) {
+                upcomingContainer.innerHTML = `
+                    <div style="text-align: center; padding: 24px 14px; background: #FFF; border-radius: 16px; border: 1px dashed var(--border-subtle); color: var(--text-muted); font-size: 0.8rem;">
+                        No hay más viajes futuros programados.
                     </div>
-                    <div class="trip-card-body">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                            <span style="font-size: 0.74rem; font-weight: 700; color: var(--gold-dark);">${t.datesDisplay}</span>
-                            ${climateHtml}
+                `;
+            } else {
+                upcomingTrips.forEach(t => {
+                    const card = document.createElement('div');
+                    card.className = 'trip-card-item';
+                    card.onclick = () => openTripDetail(t.id);
+
+                    const climateHtml = t.climate ? `
+                        <span class="weather-pill-light">
+                            <span>${t.climate.icon || '🌤️'}</span> ${t.climate.tempLowF || 64}°F - ${t.climate.tempHighF || 84}°F
+                        </span>
+                    ` : '';
+
+                    card.innerHTML = `
+                        <div class="trip-card-cover-box">
+                            <img src="${t.coverImage}" alt="${t.title}" onerror="this.parentElement.style.display='none'">
+                            <div style="position: absolute; top: 12px; left: 12px;">
+                                <span class="badge-status upcoming">PROGRAMADO</span>
+                            </div>
+                            <div style="position: absolute; top: 12px; right: 12px;">
+                                <span style="background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); color: #FFF; font-size: 0.68rem; font-weight: 700; padding: 4px 10px; border-radius: 20px;">${t.durationDays} Días</span>
+                            </div>
                         </div>
-                        <div style="font-family: 'Cormorant Garamond', serif; font-size: 1.45rem; font-weight: 700; line-height: 1.15; color: var(--text-main); margin-bottom: 4px;">${t.title}</div>
-                        <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 12px;">📍 ${t.destination}</div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border-subtle); padding-top: 10px; font-size: 0.74rem; font-weight: 700; color: var(--gold-dark);">
-                            <span>Logística & Reservas</span>
-                            <span>Explorar ›</span>
+                        <div class="trip-card-body">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                <span style="font-size: 0.74rem; font-weight: 700; color: var(--gold-dark);">${t.datesDisplay}</span>
+                                ${climateHtml}
+                            </div>
+                            <div style="font-family: 'Cormorant Garamond', serif; font-size: 1.45rem; font-weight: 700; line-height: 1.15; color: var(--text-main); margin-bottom: 4px;">${t.title}</div>
+                            <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 12px;">📍 ${t.destination}</div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border-subtle); padding-top: 10px; font-size: 0.74rem; font-weight: 700; color: var(--gold-dark);">
+                                <span>Logística & Reservas</span>
+                                <span>Explorar ›</span>
+                            </div>
+                        </div>
+                    `;
+                    upcomingContainer.appendChild(card);
+                });
+            }
+
+            // 3. Past Trips in Dashboard Subview
+            if (pastContainer) {
+                renderPastTripsList(pastContainer);
+            }
+        }
+
+        // Render Past Trips Grouped by Year and Date
+        function renderPastTripsList(container) {
+            if (!container) return;
+            const trips = appData.trips || [];
+            const pastTrips = trips.filter(t => t.status === 'past');
+
+            if (pastTrips.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 36px 16px; color: var(--text-muted); background: #FFF; border-radius: 16px; border: 1px dashed var(--border-subtle);">
+                        <div style="font-size: 2rem; margin-bottom: 6px;">🏛️</div>
+                        <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; color: var(--text-main);">Sin viajes archivados aún</div>
+                        <div style="font-size: 0.78rem;">Los viajes concluidos se archivarán automáticamente por año y fecha al terminar sus itinerarios.</div>
+                    </div>
+                `;
+                return;
+            }
+
+            // Sort by endDate descending
+            pastTrips.sort((a, b) => new Date(b.endDate || b.startDate) - new Date(a.endDate || a.startDate));
+
+            // Group by Year
+            const byYear = {};
+            pastTrips.forEach(t => {
+                const d = new Date(t.endDate || t.startDate);
+                const yr = isNaN(d.getFullYear()) ? '2026' : d.getFullYear().toString();
+                if (!byYear[yr]) byYear[yr] = [];
+                byYear[yr].push(t);
+            });
+
+            const years = Object.keys(byYear).sort((a, b) => b - a);
+
+            let html = '';
+            years.forEach(yr => {
+                const yearTrips = byYear[yr];
+                html += `
+                    <div class="past-year-group">
+                        <div class="past-year-header">
+                            <div class="past-year-title">
+                                <span>📅</span> Año ${yr}
+                            </div>
+                            <span class="past-year-badge">${yearTrips.length} ${yearTrips.length === 1 ? 'viaje concluido' : 'viajes concluidos'}</span>
+                        </div>
+                        <div class="trip-card-grid">
+                            ${yearTrips.map(t => {
+                                const climateHtml = t.climate ? `
+                                    <span class="weather-pill-light">
+                                        <span>${t.climate.icon || '🌤️'}</span> ${t.climate.tempLowF || 55}°F - ${t.climate.tempHighF || 84}°F
+                                    </span>
+                                ` : '';
+
+                                const flightCount = (t.flights || []).length;
+                                const hotelCount = (t.lodgings || []).length;
+                                const trainCount = (t.trains || []).length;
+                                const logItems = [];
+                                if (flightCount > 0) logItems.push(`✈️ ${flightCount} Vuelos`);
+                                if (trainCount > 0) logItems.push(`🚄 ${trainCount} Tren AVE`);
+                                if (hotelCount > 0) logItems.push(`🏨 ${hotelCount} Hoteles`);
+                                logItems.push('💶 Reservas Archivadas');
+
+                                return `
+                                    <div class="trip-card-item" onclick="openTripDetail('${t.id}')">
+                                        <div class="trip-card-cover-box">
+                                            <img src="${t.coverImage}" alt="${t.title}" onerror="this.parentElement.style.display='none'">
+                                            <div style="position: absolute; top: 12px; left: 12px;">
+                                                <span class="badge-status past">✓ VIAJE REALIZADO</span>
+                                            </div>
+                                            <div style="position: absolute; top: 12px; right: 12px;">
+                                                <span style="background: rgba(0,0,0,0.65); backdrop-filter: blur(8px); color: #FFF; font-size: 0.68rem; font-weight: 700; padding: 4px 10px; border-radius: 20px;">${t.durationDays} Días</span>
+                                            </div>
+                                        </div>
+                                        <div class="trip-card-body">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                                <span style="font-size: 0.74rem; font-weight: 700; color: var(--gold-dark);">${t.datesDisplay}</span>
+                                                ${climateHtml}
+                                            </div>
+                                            <div style="font-family: 'Cormorant Garamond', serif; font-size: 1.45rem; font-weight: 700; line-height: 1.15; color: var(--text-main); margin-bottom: 4px;">${t.title}</div>
+                                            <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 8px;">📍 ${t.destination}</div>
+                                            <div style="font-size: 0.72rem; color: #4B5563; margin-bottom: 12px; background: rgba(31,27,24,0.03); padding: 6px 10px; border-radius: 10px;">
+                                                ${logItems.join(' · ')}
+                                            </div>
+                                            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border-subtle); padding-top: 10px; font-size: 0.74rem; font-weight: 700; color: var(--gold-dark);">
+                                                <span>Bitácora & Memoria de Viaje</span>
+                                                <span>Ver Itinerario Completo ›</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
                         </div>
                     </div>
                 `;
-                upcomingContainer.appendChild(card);
             });
+
+            container.innerHTML = html;
+        }
+
+        // Dedicated Past Trips Screen
+        function renderPastTripsScreen() {
+            const host = document.getElementById('past-trips-screen-container');
+            if (host) renderPastTripsList(host);
         }
 
         // Single Trip Detail Content Renderer
         function renderTripDetailContent(trip) {
             const headerBox = document.getElementById('trip-detail-header');
             if (headerBox) {
+                const isPast = trip.status === 'past';
+                const statusBadge = isPast 
+                    ? `<span class="badge-status past" style="align-self: flex-start; margin-bottom: 6px;">✓ VIAJE REALIZADO & ARCHIVADO</span>`
+                    : `<span class="badge-status active" style="align-self: flex-start; margin-bottom: 6px;">${trip.status === 'active' ? 'PRÓXIMA SALIDA INMEDIATA' : 'PROGRAMADO'}</span>`;
+
                 headerBox.innerHTML = `
                     <div style="position: relative; border-radius: 20px; overflow: hidden; height: 180px; margin-bottom: 14px; background: #0F1D2E;">
                         <img src="${trip.coverImage}" alt="${trip.title}" style="width: 100%; height: 100%; object-fit: cover; filter: brightness(0.65);">
                         <div style="position: absolute; inset: 0; padding: 18px; display: flex; flex-direction: column; justify-content: flex-end; color: #FFF;">
+                            ${statusBadge}
                             <div style="font-size: 0.72rem; font-weight: 700; color: #E7C975; text-transform: uppercase;">${trip.datesDisplay} · ${trip.durationDays} Días</div>
                             <h1 style="font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 700; line-height: 1.1;">${trip.title}</h1>
                             <div style="font-size: 0.78rem; opacity: 0.9;">📍 ${trip.destination}</div>
@@ -1752,254 +2017,379 @@ html_content << <<-'HTML_FOOTER'
         // Smart Packing Engine (Traveler Personalized & Activity Aware)
         let currentPackingTraveler = 'milton'; // 'milton' | 'aileen' | 'shared'
 
+        function getTravelerPackingSpec(travelerKey, trip) {
+            const climate = trip?.climate || {};
+            const lowF = climate.tempLowF != null ? climate.tempLowF : 60;
+            const isCold = lowF < 50; // Cold autumn / winter weather under 50°F
+            const tripId = trip?.id || '';
+            const acts = trip?.activitiesConfig || { golf: true, beach: true };
+
+            if (travelerKey === 'milton') {
+                const coldBadge = isCold ? `❄️ Frío ${lowF}°F` : 'Clima 55°F';
+                const itemsList = [
+                    { id: "m_camisas_larga", text: "Camisas manga larga", sub: isCold ? "Algodón de invierno / franela fina para clima fresco y cenas" : "De vestir y casual" },
+                    { id: "m_camisas_obscure", text: "Camisas de traje obscure", sub: "Para noches de gala y cenas de autor" },
+                    { id: "m_polos", text: "Polos", sub: "Uso diario y paseos" },
+                    { id: "m_tshirt", text: "T-shirt", sub: "Capas base de algodón" },
+                    { id: "m_mahones", text: "Mahones", sub: "Casual chic para desplazamientos y tren" },
+                    { id: "m_pantalones", text: "Pantalones", sub: isCold ? `Pantalones de lana fría / Chinos de invierno para mínimas de ${lowF}°F` : "Ligeros de vestir / Chinos" },
+                    { id: "m_bermuda", text: isCold ? "Bermudas (Opcional)" : "Bermuda", sub: isCold ? "☀️ Solo si el clima en Puglia supera los 70°F" : "Clima cálido en el sur (Sotogrande)", badge: isCold ? "Puglia 72°F" : "" },
+                    { id: "m_chaqueta", text: "Chaqueta / Blazer", sub: "🍽️ Blazer estructurado para cenas y restaurantes de autor" },
+                    { 
+                        id: "m_jacket_pesado", 
+                        text: isCold ? "Abrigo pesado / Chaquetón de invierno" : "Jacket pesado", 
+                        sub: isCold ? `❄️ Esencial: Mínimas de ${lowF}°F en París y Borgoña / Cavas de vino` : "🌙 Noches de 55°F en Madrid / Llevar si prefiere mayor abrigo", 
+                        badge: coldBadge 
+                    },
+                    { 
+                        id: "m_jacket_liviano", 
+                        text: isCold ? "Trench impermeable / Chaqueta corta-lluvia" : "Jacket Liviano", 
+                        sub: isCold ? "🌧️ Protección contra llovizna otoñal en París y viento en traslados" : "🌙 Ideal para las noches frescas de Madrid (55°F)",
+                        badge: isCold ? "Impermeable" : ""
+                    },
+                    { 
+                        id: "m_fleece", 
+                        text: isCold ? "Fleece térmico / Suéter de lana o cashmere" : "Fleece", 
+                        sub: isCold ? "🍷 Esencial para cavas subterráneas de Borgoña (53°F) y vuelo nocturno" : "Confort en cabina presurizada de vuelo nocturno",
+                        badge: isCold ? "Cavas 53°F" : ""
+                    }
+                ];
+
+                if (isCold) {
+                    itemsList.push({
+                        id: "m_bufanda_milton",
+                        text: "Bufanda de lana o cashmere",
+                        sub: `🧣 Protección térmica para el cuello en mañanas y noches de ${lowF}°F`,
+                        badge: `❄️ Frío ${lowF}°F`
+                    });
+                }
+
+                itemsList.push(
+                    { id: "m_correa_diario", text: "Correa diario", sub: "Uso casual" },
+                    { id: "m_correa_salir", text: "Correa salir", sub: "Piel formal para combinar con calzado de noche" },
+                    { id: "m_pantalon_pajama", text: "Pantalon pajama", sub: "Descanso" },
+                    { id: "m_camisa_pajama", text: "Camisa pajama", sub: "Descanso" },
+                    { id: "m_calsoncillos", text: "Calsoncillos", sub: "Mudas suficientes de algodón" },
+                    { id: "m_medias_salir", text: "Medias salir", sub: "Para calzado formal" },
+                    { id: "m_medias_diario", text: "Medias diario", sub: "Uso diario" },
+                    { id: "m_medias_tenis", text: "Medias tenis", sub: "Deportivas y caminatas" },
+                    { id: "m_ropa_ejercicio", text: "Ropa ejercicio", sub: "Gimnasio y entrenamientos" },
+                    { id: "m_traje_bano", text: "Traje de baño", sub: "🏊 Piscina y spa (controlado por toggle de Playa)", tag: "beach" },
+                    { id: "m_zapatos_salir", text: "Zapatos de salir", sub: "Mocasines / Piel formal" },
+                    { id: "m_zapatos_diario", text: "Zapatos diario", sub: isCold ? "Suela de goma para adoquines y viñedos de Beaune" : "Suela de goma para adoquines del Casco Antiguo" },
+                    { id: "m_tenis", text: "Tenis", sub: "Deportivos / Caminatas largas" },
+                    { id: "m_cepillo_dientes", text: "Cepillo dientes", sub: "Aseo dental" },
+                    { id: "m_cepillo_pelo", text: "Cepillo pelo", sub: "Cuidado capilar" },
+                    { id: "m_chapstik", text: "Chapstik", sub: "Bálsamo labial protector" },
+                    { id: "m_corta_unas", text: "Corta uñas", sub: "Cuidado personal" },
+                    { id: "m_dental_floss", text: "Dental floss", sub: "Hilo dental" },
+                    { id: "m_desodorante", text: "Desodorante", sub: "Aseo personal" },
+                    { id: "m_pasta_dientes", text: "Pasta dientes", sub: "Aseo dental" },
+                    { id: "m_perfume", text: "Perfume", sub: "Fragrancia de viaje" },
+                    { id: "m_razuradora", text: "Razuradora", sub: "Afeitado y cuchillas" },
+                    { id: "m_shampoo", text: "Shampoo", sub: "Cuidado capilar" },
+                    { id: "m_conditioner", text: "Conditioner", sub: "Acondicionador capilar" },
+                    { id: "m_medicinas", text: "Medicinas", sub: "Botiquín y recetas personales para el viaje" },
+                    { id: "m_cargador_celular", text: "Cargador Celular", sub: "Cable y cargador móvil" },
+                    { id: "m_cargador_reloj", text: "Cargador reloj", sub: "Cargador Apple Watch / Smartwatch" },
+                    { id: "m_prendas", text: "Prendas", sub: "Reloj de vestir, gemelos y accesorios personales" }
+                );
+
+                const beachItems = [
+                    { id: "m_beach_swim_extra", text: "Traje de baño adicional de cambio", sub: "Para rotar tras piscina o solárium", tag: "beach" }
+                ];
+                if (tripId === 'trip-europe-autumn-2026') {
+                    beachItems.push(
+                        { id: "m_beach_windbreaker", text: "Chaqueta cortavientos náutica", sub: "Para navegación en yate Antares 11 por Polignano y cuevas marinas", tag: "beach", badge: "Yate Puglia" },
+                        { id: "m_beach_boat_shoes", text: "Calzado náutico con suela blanca antideslizante", sub: "Aptos para cubierta de teca del yate", tag: "beach", badge: "Yate" }
+                    );
+                }
+                beachItems.push(
+                    { id: "m_beach_linen_shirt", text: "Camisas de lino fresco / Polos de verano", sub: "Para almuerzos en terrazas costeras", tag: "beach" },
+                    { id: "m_beach_slides", text: "Sandalias de playa / Chanclas impermeables", sub: "Resistentes al agua para piscina y calas", tag: "beach" },
+                    { id: "m_beach_hat", text: "Sombrero de sol / Panamá", sub: "Protección solar distinguida", tag: "beach" },
+                    { id: "m_beach_sunglasses", text: "Gafas de sol polarizadas UV400", sub: "Anti-reflejo para agua y brisa", tag: "beach" },
+                    { id: "m_beach_bag", text: "Bolsa de playa / Mochila impermeable", sub: "Para llevar toalla, cremas y móvil", tag: "beach" },
+                    { id: "m_beach_phone_pouch", text: "Funda impermeable o estanca para smartphone", sub: "Protección contra salpicaduras de agua y arena", tag: "beach" },
+                    { id: "m_beach_sunscreen", text: "Protector solar corporal resistente al agua (SPF 50+)", sub: "Protección de amplio espectro", tag: "beach" },
+                    { id: "m_beach_aftersun", text: "Gel hidratante post-solar (After-sun / Aloe Vera)", sub: "Alivio y regeneración tras el sol", tag: "beach" }
+                );
+
+                return {
+                    name: "Milton Cruz",
+                    icon: "👔",
+                    categories: [
+                        {
+                            name: `Checklist Viaje (Milton Cruz) · ${isCold ? 'Edición Clima Frío' : 'Edición Clásica'}`,
+                            icon: "📋",
+                            badge: isCold ? "Adaptado a Clima Frío" : "Lista Original",
+                            items: itemsList
+                        },
+                        {
+                            name: "Equipamiento & Indumentaria de Golf",
+                            icon: "⛳",
+                            tag: "golf",
+                            badge: "Golf Activo",
+                            items: [
+                                { id: "m_golf_polo", text: "Polos técnicos de golf con cuello", sub: "Código de vestimenta exigido en casa club", tag: "golf" },
+                                { id: "m_golf_pants", text: "Pantalones / Bermudas técnicas de golf", sub: "Tejido elástico transpirable para campo", tag: "golf" },
+                                { id: "m_golf_socks", text: "Medias de golf técnicas", sub: "Acolchado anti-rozaduras en talón y planta", tag: "golf" },
+                                { id: "m_golf_belt", text: "Correa de golf deportiva", sub: "Ajuste elástico para el swing", tag: "golf" },
+                                { id: "m_golf_windbreaker", text: "Chaqueta cortavientos / Chaleco ligero de golf", sub: "Para la brisa matutina en el campo", tag: "golf" },
+                                { id: "m_golf_shoes", text: "Zapatos de golf (Spikeless / Soft spikes)", sub: "Suela con agarre especial sin clavos metálicos", tag: "golf" },
+                                { id: "m_golf_gloves", text: "Guantes de golf (Piel Cabretta)", sub: "Guante principal + repuesto nuevo en empaque", tag: "golf" },
+                                { id: "m_golf_cap", text: "Gorra deportiva o visera de golf", sub: "Protección solar obligatoria para 18 hoyos", tag: "golf" },
+                                { id: "m_golf_balls", text: "Bolas de golf (Titleist Pro V1 o similar)", sub: "1 docena / bolas de juego", tag: "golf" },
+                                { id: "m_golf_tees", text: "Tees de golf (madera o bambú)", sub: "Surtido de alturas para Driver y hierros", tag: "golf" },
+                                { id: "m_golf_divot_marker", text: "Arreglapiques (Divot tool) & Marcadores de bola", sub: "Reparador de piques y marcador para greens", tag: "golf" },
+                                { id: "m_golf_towel", text: "Toalla de microfibra de golf", sub: "Para limpieza de varillas, palos y bolas", tag: "golf" },
+                                { id: "m_golf_rangefinder", text: "Telémetro láser (Rangefinder) o Reloj GPS de golf", sub: "Medición exacta de distancias (+ cargador)", tag: "golf" },
+                                { id: "m_golf_sunscreen", text: "Protector solar deportivo resistente al sudor (SPF 50+)", sub: "Protección de alta duración para 4-5h de juego", tag: "golf" },
+                                { id: "m_golf_travel_bag", text: "Funda de viaje acolchada para palos", sub: "Protección en bodega o coordinar alquiler en club", tag: "golf" },
+                                { id: "m_golf_thermos", text: "Botella térmica / Termo de agua para la ronda", sub: "Hidratación continua durante los 18 hoyos", tag: "golf" }
+                            ]
+                        },
+                        {
+                            name: "Indumentaria & Accesorios de Playa / Piscina / Náutica",
+                            icon: "🏖️",
+                            tag: "beach",
+                            badge: "Playa / Náutica",
+                            items: beachItems
+                        },
+                        {
+                            name: "Sugerencias Complementarias (Cenas de Autor & Confort)",
+                            icon: "✨",
+                            badge: "Sugerido",
+                            items: [
+                                { id: "m_panuelo_bolsillo", text: "Pañuelo de bolsillo o corbata de seda", sub: tripId === 'trip-europe-autumn-2026' ? "Para Le Meurice o Maison Lameloise 3★ Michelin" : "Para cena de gala en Amós 3★ Michelin / Rosewood Villa Magna" },
+                                { id: "m_flight_socks", text: "Calcetines de descanso / compresión suave", sub: "Para vuelos transatlánticos en Business" },
+                                { id: "m_airpods", text: "Auriculares con cancelación activa de ruido", sub: "Para descanso en vuelos y trenes" },
+                                { id: "m_airtag", text: "Apple AirTag en maletas facturadas y maletín", sub: "Rastreo de equipaje en tiempo real" }
+                            ]
+                        }
+                    ]
+                };
+            } else if (travelerKey === 'aileen') {
+                const coldBadge = isCold ? `❄️ Frío ${lowF}°F` : 'Clima 55°F';
+                const itemsList = [
+                    { id: "a_camisas_larga", text: "Camisas manga larga", sub: isCold ? "Blusas cálidas, seda y camisas de manga larga para capas otoñales" : "Lino y vestir para cenas y visitas" },
+                    { id: "a_camisas_salir", text: "Camisas de Salir", sub: "Blusas elegantes de seda o satén para cenas" },
+                    { id: "a_camisas_diario", text: "Camisas de Diario", sub: "Tejidos suaves y cómodos para capas" },
+                    { id: "a_mahones", text: "Mahones", sub: "Jeans de corte impecable para tours y traslados" },
+                    { id: "a_pantalones", text: "Pantalones", sub: isCold ? `Pantalones de vestir / Lana fría para mínimas de ${lowF}°F` : "Pantalones de vestir / lino para el sur" },
+                    { 
+                        id: "a_abrigo_pesado", 
+                        text: isCold ? "Abrigo de lana pesado / Abrigo largo elegante" : "Abrigo pesado", 
+                        sub: isCold ? `❄️ Esencial: Mínimas de ${lowF}°F en París y viñedos de Borgoña` : "🌙 Noches de 55°F en Madrid / Opcional según preferencia", 
+                        badge: coldBadge 
+                    },
+                    { 
+                        id: "a_abrigo_liviano", 
+                        text: isCold ? "Trench coat elegante impermeable" : "Abrigo Liviano", 
+                        sub: isCold ? "🌧️ Clásico parisino resistente al agua para lloviznas y paseos" : "Trench coat liviano / chaqueta de entretiempo",
+                        badge: isCold ? "Lluvia/Otoño" : ""
+                    },
+                    { 
+                        id: "a_fleece", 
+                        text: isCold ? "Cárdigan grueso / Suéter de cashmere cálido" : "Fleece", 
+                        sub: isCold ? "🍷 Fundamental para visitas a cavas históricas subterráneas a 53°F" : "Cárdigan fino o abrigo suave para el avión",
+                        badge: isCold ? "Cavas 53°F" : ""
+                    },
+                    { 
+                        id: "a_panuelo", 
+                        text: isCold ? "Pashmina de cashmere / Bufanda abrigada" : "Pañuelo", 
+                        sub: isCold ? `🧣 Aislamiento térmico para mañanas frías (${lowF}°F) y brisa en barco` : "Pashmina de seda para brisa, iglesias y aire acondicionado",
+                        badge: isCold ? `❄️ Frío ${lowF}°F` : ""
+                    },
+                    { id: "a_bermuda", text: isCold ? "Bermuda / Shorts elegantes (Opcional)" : "Bermuda", sub: isCold ? "☀️ Solo para mediodías soleados en Puglia si sube a 72°F" : "☀️ Shorts elegantes para Sotogrande y paseos", badge: isCold ? "Puglia 72°F" : "" },
+                    { id: "a_correa", text: "Correa", sub: "Accesorio de diario" },
+                    { id: "a_pajama", text: "Pajama", sub: "Pajama fresca de descanso" },
+                    { id: "a_panties", text: "Panties", sub: "Mudas suficientes de algodón o microfibra" },
+                    { id: "a_brazier", text: "Brazier", sub: "Diarios, strapless y de vestir" },
+                    { id: "a_medias_diario", text: "Medias diario", sub: "Uso diario" },
+                    { id: "a_medias_tenis", text: "Medias tenis", sub: "Para calzado deportivo y caminatas" },
+                    { id: "a_ropa_ejercicio", text: "Ropa ejercicio", sub: "Gym y entrenamientos" },
+                    { id: "a_brazier_ejercicios", text: "Brazier ejercicios", sub: "Top deportivo de soporte" },
+                    { id: "a_traje_bano", text: "Traje de baño", sub: "🏊 Spas y navegación (controlado por toggle de Playa)", tag: "beach" },
+                    { id: "a_zapatos_salir", text: "Zapatos de salir", sub: "Tacón cómodo o botines elegantes para cena" },
+                    { 
+                        id: "a_zapatos_walking", 
+                        text: isCold ? "Botines de piel cómodos / Calzado cerrado impermeable" : "Zapatos diario walking", 
+                        sub: isCold ? "👢 Indispensable para adoquines mojados de París y viñedos de Beaune" : "Suela plana indispensable para adoquines de Sevilla",
+                        badge: isCold ? "Calzado Cerrado" : ""
+                    },
+                    { id: "a_tenis", text: "Tenis", sub: "Caminatas largas por museos y parques" },
+                    { id: "a_cepillo_dientes", text: "Cepillo dientes", sub: "Aseo dental" },
+                    { id: "a_cepillo_pelo", text: "Cepillo pelo", sub: "Peinado y cepillado" },
+                    { id: "a_chapstik", text: "Chapstik", sub: "Bálsamo labial hidratante" },
+                    { id: "a_corta_unas", text: "Corta uñas", sub: "Corta uñas y lima de viaje" },
+                    { id: "a_dental_floss", text: "Dental floss", sub: "Hilo dental" },
+                    { id: "a_desodorante", text: "Desodorante", sub: "Aseo personal" },
+                    { id: "a_pasta_dientes", text: "Pasta dientes", sub: "Aseo dental" },
+                    { id: "a_perfume", text: "Perfume", sub: "Fragrancia de viaje" },
+                    { id: "a_razuradora", text: "Razuradora", sub: "Rasuradora femenina" },
+                    { id: "a_shampoo", text: "Shampoo", sub: "Cuidado capilar" },
+                    { id: "a_plancha_pelo", text: "Plancha de Pelo", sub: "⚡ Verificar voltaje 110-240V para red de 230V europea", badge: "230V EU" },
+                    { id: "a_medicinas", text: "Medicinas", sub: "Botiquín personal y analgésicos" },
+                    { id: "a_cargador_celular", text: "Cargador Celular", sub: "Cable y cargador móvil" },
+                    { id: "a_cargador_reloj", text: "Cargador reloj", sub: "Cargador Smartwatch" },
+                    { id: "a_prendas", text: "Prendas", sub: "Joyero de viaje seguro en bolso de mano" },
+                    { id: "a_voltage_converter", text: "Voltage converter", sub: "Adaptador europeo Tipo C/E/F (230V / 50Hz)", badge: "Enchufe EU" }
+                ];
+
+                const beachItems = [
+                    { id: "a_beach_swim_extra", text: "Traje de baño adicional de cambio", sub: "Para alternar en spa, solárium y nado", tag: "beach" }
+                ];
+                if (tripId === 'trip-europe-autumn-2026') {
+                    beachItems.push(
+                        { id: "a_beach_windbreaker", text: "Cortavientos / Chaqueta náutica ligera", sub: "Para brisa marina en el yate Antares 11 en Polignano a Mare", tag: "beach", badge: "Yate Puglia" }
+                    );
+                }
+                beachItems.push(
+                    { id: "a_beach_coverup", text: "Salida de baño / Kimono / Pareo elegante", sub: "Para tránsito del spa a la piscina o solárium", tag: "beach" },
+                    { id: "a_beach_sandals", text: "Sandalias de playa / Chanclas de diseño impermeables", sub: "Calzado para áreas húmedas y piscina", tag: "beach" },
+                    { id: "a_beach_hat", text: "Sombrero de sol / Pamina de ala ancha", sub: "Protección solar chic para la costa", tag: "beach" },
+                    { id: "a_beach_tote", text: "Bolso de playa / Capazo o Tote bag amplio", sub: "Para llevar toalla, libros y cosmética", tag: "beach" },
+                    { id: "a_beach_phone_pouch", text: "Funda impermeable o estanca para smartphone", sub: "Protección total contra agua y arena", tag: "beach" },
+                    { id: "a_beach_sunscreen", text: "Protector solar corporal resistente al agua SPF 50+", sub: "Protección de amplio espectro", tag: "beach" },
+                    { id: "a_beach_aftersun", text: "Loción o gel post-solar calmante (After-sun)", sub: "Hidratación profunda post-sol", tag: "beach" }
+                );
+
+                return {
+                    name: "Aileen Rosso",
+                    icon: "👗",
+                    categories: [
+                        {
+                            name: `Checklist Viaje (Aileen Rosso) · ${isCold ? 'Edición Clima Frío' : 'Edición Clásica'}`,
+                            icon: "📋",
+                            badge: isCold ? "Adaptado a Clima Frío" : "Lista Original",
+                            items: itemsList
+                        },
+                        {
+                            name: "Acompañamiento / Indumentaria de Golf",
+                            icon: "⛳",
+                            tag: "golf",
+                            badge: "Golf Activo",
+                            items: [
+                                { id: "a_golf_polo", text: "Polo de golf / Top técnico con cuello", sub: "Etiqueta exigida en casa club y campo de golf", tag: "golf" },
+                                { id: "a_golf_skort", text: "Pantalones / Shorts / Falda-pantalón de golf", sub: "Tejido técnico elástico y transpirable", tag: "golf" },
+                                { id: "a_golf_shoes", text: "Zapatos de golf o tenis de suela plana", sub: "Aptos para caminar sobre césped de campo", tag: "golf" },
+                                { id: "a_golf_visor", text: "Visera o gorra deportiva de golf", sub: "Protección solar chic para 18 hoyos", tag: "golf" },
+                                { id: "a_golf_sunglasses", text: "Gafas de sol con alta protección UV", sub: "Descanso visual en campo abierto", tag: "golf" },
+                                { id: "a_golf_sunscreen", text: "Protector solar facial & corporal deportivo SPF 50+", sub: "Resistente a la exposición continua al aire libre", tag: "golf" }
+                            ]
+                        },
+                        {
+                            name: "Indumentaria & Accesorios de Playa / Piscina / Náutica",
+                            icon: "🏖️",
+                            tag: "beach",
+                            badge: "Playa / Náutica",
+                            items: beachItems
+                        },
+                        {
+                            name: "Sugerencias Complementarias (Cenas VIP & Belleza)",
+                            icon: "✨",
+                            badge: "Sugerido",
+                            items: [
+                                { id: "a_vestidos_dia", text: isCold ? "Vestidos midi de punto fino / manga larga abrigados" : "Vestidos midi vaporosos de lino para el día", sub: isCold ? "Elegancia otoñal para Le Meurice, bodegas y Lecce" : "Frescura distinguida para Sevilla y bodegas" },
+                                { id: "a_vestidos_noche", text: "Vestidos de cóctel / noche de gala", sub: tripId === 'trip-europe-autumn-2026' ? "Para Le Meurice y palacios barrocos en Lecce" : "Para Rosewood Villa Magna y Hotel Colón" },
+                                { id: "a_bolso_crossbody", text: "Bolso cruzado seguro (Crossbody) y Clutch de noche", sub: "Seguridad en tours y elegancia en cenas" },
+                                { id: "a_protector_facial", text: "Protector solar facial antiedad SPF 50+", sub: "Protección diaria antienvejecimiento indispensable" },
+                                { id: "a_crema_hidratante", text: "Sérum facial ultra-hidratante & Crema intensiva", sub: "Protección contra aire frío, viento y calefacción" },
+                                { id: "a_desmaquillante", text: "Toallitas desmaquillantes / Agua micelar viaje", sub: "Limpieza facial nocturna" },
+                                { id: "a_airtag", text: "Apple AirTag en cartera de mano y maleta", sub: "Localización precisa en iPhone" }
+                            ]
+                        }
+                    ]
+                };
+            } else {
+                // Shared
+                const docItems = [
+                    { id: "s_pasaportes", text: "Pasaportes vigentes (Milton & Aileen)", sub: "Mínimo 6 meses de vigencia y copias en la nube" },
+                    { id: "s_amex", text: "Tarjeta American Express Platinum", sub: "Acceso a Centurion Lounges, Delta Sky Club y beneficios FHR" },
+                    { id: "s_loyalty", text: "Tarjetas de fidelización digitales (Delta Platinum, Mosaic 3, SkyTeam)", sub: "Prioridad de equipaje y embarque" }
+                ];
+
+                if (tripId === 'trip-europe-autumn-2026') {
+                    docItems.push(
+                        { id: "s_flight_docs_eu", text: "Reservas de vuelos Business (Delta One / AF 1288 / Iberia Business)", sub: "PNR: CEV4RW / K2Y8B · Asientos emparejados confirmados" },
+                        { id: "s_hotels_france_italy", text: "Confirmaciones de Hoteles de Lujo (Le Meurice, Hostellerie Cèdre, Sextantio, Masserias)", sub: "París, Borgoña, Matera, Ostuni y Lecce" }
+                    );
+                } else if (tripId === 'trip-spain-andalucia-sep2026') {
+                    docItems.push(
+                        { id: "s_ave_tickets", text: "Billetes de tren Renfe AVE Confort (Localizador 73MWSR)", sub: "Coche 1, Asientos 9B y 9C (25 Sep)" },
+                        { id: "s_hotel_vmagna", text: "Confirmación Rosewood Villa Magna Madrid (32298SG208578)", sub: "Paseo de la Castellana 22, Barrio de Salamanca" }
+                    );
+                }
+
+                const techItems = [
+                    { id: "s_adaptadores", text: "2x Adaptadores de enchufe europeo (Tipo C/E/F/L)", sub: "Para Francia e Italia (230V / 50Hz)" },
+                    { id: "s_cargador_gan", text: "Cargador de pared GaN 65W multidispositivo (USB-C/A)", sub: "Carga simultánea de iPhones, Apple Watch y iPads" },
+                    { id: "s_cables", text: "Cables de carga rápida largos (USB-C y Lightning 2m)", sub: "Para habitaciones de hotel y transporte" },
+                    { id: "s_powerbank", text: "Batería externa portátil (PowerBank 10,000 mAh)", sub: "🔋 Llevar siempre en equipaje de mano (prohibido en bodega)" },
+                    { id: "s_audio_adapter", text: "Adaptador de audio para cabina de avión (Jack 3.5mm o Bluetooth)", sub: "Para conectar auriculares al sistema de entretenimiento de vuelo" }
+                ];
+
+                if (isCold || tripId === 'trip-europe-autumn-2026') {
+                    techItems.unshift(
+                        { id: "s_paraguas_windproof", text: "Paraguas compacto resistente al viento (Windproof)", sub: "🌧️ Imprescindible para lloviznas y niebla otoñal en París y Borgoña", badge: "Otoño" },
+                        { id: "s_wineskins", text: "Bolsas acolchadas protectoras para botellas de vino (WineSkin)", sub: "🍷 Para transportar botellas exclusivas de Borgoña Grand Cru en maleta facturada", badge: "Borgoña" }
+                    );
+                }
+
+                return {
+                    name: "Equipaje Compartido",
+                    icon: "🧳",
+                    categories: [
+                        {
+                            name: "Documentos, Finanzas & Fidelización VIP",
+                            icon: "🛂",
+                            badge: "VIP",
+                            items: docItems
+                        },
+                        {
+                            name: "Conectividad, Gadgets & Protección de Viaje",
+                            icon: "⚡",
+                            badge: "Tech / Clima",
+                            items: techItems
+                        },
+                        {
+                            name: "Botiquín de Viaje & Confort en Ruta",
+                            icon: "💊",
+                            badge: "Salud",
+                            items: [
+                                { id: "s_compeed", text: "Curitas hidrocoloides para ampollas (tipo Compeed)", sub: "Salvavidas para caminatas en adoquines de centros históricos" },
+                                { id: "s_digestivos", text: "Antiácidos / Digestivos", sub: "Para degustar la gastronomía regional sin molestias" },
+                                { id: "s_analgesicos", text: "Analgésicos (Ibuprofeno, Paracetamol)", sub: "Alivio general para dolores o fatiga" },
+                                { id: "s_gotas_ojos", text: "Gotas oculares lubricantes (Lágrimas artificiales)", sub: "Para evitar sequedad ocular en vuelos largos" },
+                                { id: "s_toallitas", text: "Toallitas desinfectantes de viaje", sub: "Para superficies de avión y transporte" }
+                            ]
+                        }
+                    ]
+                };
+            }
+        }
+
+        // ES Getter Proxy for backward compatibility with TRAVELER_PACKING_SPECS
         const TRAVELER_PACKING_SPECS = {
-            milton: {
-                name: "Milton Cruz",
-                icon: "👔",
-                categories: [
-                    {
-                        name: "Checklist Viaje Original (Milton Cruz)",
-                        icon: "📋",
-                        badge: "Lista Original",
-                        items: [
-                            { id: "m_camisas_larga", text: "Camisas manga larga", sub: "De vestir y casual" },
-                            { id: "m_camisas_obscure", text: "Camisas de traje obscure", sub: "Para noches de gala y cenas de autor" },
-                            { id: "m_polos", text: "Polos", sub: "Uso diario y paseos" },
-                            { id: "m_tshirt", text: "T-shirt", sub: "Capas base de algodón" },
-                            { id: "m_mahones", text: "Mahones", sub: "Casual chic para desplazamientos" },
-                            { id: "m_pantalones", text: "Pantalones", sub: "Ligeros de vestir / Chinos" },
-                            { id: "m_bermuda", text: "Bermuda", sub: "Clima cálido en el sur (Sotogrande)" },
-                            { id: "m_chaqueta", text: "Chaqueta", sub: "🍽️ Blazer estructurado para cenas y restaurantes" },
-                            { id: "m_jacket_liviano", text: "Jacket Liviano", sub: "🌙 Ideal para las noches frescas de Madrid (55°F)" },
-                            { id: "m_jacket_pesado", text: "Jacket pesado", sub: "🌙 Noches de 55°F en Madrid / Llevar si prefiere mayor abrigo", badge: "Clima 55°F" },
-                            { id: "m_fleece", text: "Fleece", sub: "Confort en cabina presurizada de vuelo nocturno" },
-                            { id: "m_correa_diario", text: "Correa diario", sub: "Uso casual" },
-                            { id: "m_correa_salir", text: "Correa salir", sub: "Piel formal para combinar con calzado de noche" },
-                            { id: "m_pantalon_pajama", text: "Pantalon pajama", sub: "Descanso" },
-                            { id: "m_camisa_pajama", text: "Camisa pajama", sub: "Descanso" },
-                            { id: "m_calsoncillos", text: "Calsoncillos", sub: "Mudas suficientes de algodón" },
-                            { id: "m_medias_salir", text: "Medias salir", sub: "Para calzado formal" },
-                            { id: "m_medias_diario", text: "Medias diario", sub: "Uso diario" },
-                            { id: "m_medias_tenis", text: "Medias tenis", sub: "Deportivas y caminatas" },
-                            { id: "m_ropa_ejercicio", text: "Ropa ejercicio", sub: "Gimnasio y entrenamientos" },
-                            { id: "m_traje_bano", text: "Traje de baño", sub: "🏊 Piscina y spa (controlado por toggle de Playa)", tag: "beach" },
-                            { id: "m_zapatos_salir", text: "Zapatos de salir", sub: "Mocasines / Piel formal" },
-                            { id: "m_zapatos_diario", text: "Zapatos diario", sub: "Suela de goma para adoquines del Casco Antiguo" },
-                            { id: "m_tenis", text: "Tenis", sub: "Deportivos / Caminatas largas" },
-                            { id: "m_cepillo_dientes", text: "Cepillo dientes", sub: "Aseo dental" },
-                            { id: "m_cepillo_pelo", text: "Cepillo pelo", sub: "Cuidado capilar" },
-                            { id: "m_chapstik", text: "Chapstik", sub: "Bálsamo labial protector" },
-                            { id: "m_corta_unas", text: "Corta uñas", sub: "Cuidado personal" },
-                            { id: "m_dental_floss", text: "Dental floss", sub: "Hilo dental" },
-                            { id: "m_desodorante", text: "Desodorante", sub: "Aseo personal" },
-                            { id: "m_pasta_dientes", text: "Pasta dientes", sub: "Aseo dental" },
-                            { id: "m_perfume", text: "Perfume", sub: "Fragrancia de viaje" },
-                            { id: "m_razuradora", text: "Razuradora", sub: "Afeitado y cuchillas" },
-                            { id: "m_shampoo", text: "Shampoo", sub: "Cuidado capilar" },
-                            { id: "m_conditioner", text: "Conditioner", sub: "Acondicionador capilar" },
-                            { id: "m_medicinas", text: "Medicinas", sub: "Botiquín y recetas personales para el viaje" },
-                            { id: "m_cargador_celular", text: "Cargador Celular", sub: "Cable y cargador móvil" },
-                            { id: "m_cargador_reloj", text: "Cargador reloj", sub: "Cargador Apple Watch / Smartwatch" },
-                            { id: "m_prendas", text: "Prendas", sub: "Reloj de vestir, gemelos y accesorios personales" }
-                        ]
-                    },
-                    {
-                        name: "Equipamiento & Indumentaria de Golf",
-                        icon: "⛳",
-                        tag: "golf",
-                        badge: "Golf Activo",
-                        items: [
-                            { id: "m_golf_polo", text: "Polos técnicos de golf con cuello", sub: "Código de vestimenta exigido en Almenara Golf Club", tag: "golf" },
-                            { id: "m_golf_pants", text: "Pantalones / Bermudas técnicas de golf", sub: "Tejido elástico transpirable para campo", tag: "golf" },
-                            { id: "m_golf_socks", text: "Medias de golf técnicas", sub: "Acolchado anti-rozaduras en talón y planta", tag: "golf" },
-                            { id: "m_golf_belt", text: "Correa de golf deportiva", sub: "Ajuste elástico para el swing", tag: "golf" },
-                            { id: "m_golf_windbreaker", text: "Chaqueta cortavientos / Chaleco ligero de golf", sub: "Para la brisa matutina en el campo", tag: "golf" },
-                            { id: "m_golf_shoes", text: "Zapatos de golf (Spikeless / Soft spikes)", sub: "Suela con agarre especial sin clavos metálicos", tag: "golf" },
-                            { id: "m_golf_gloves", text: "Guantes de golf (Piel Cabretta)", sub: "Guante principal + repuesto nuevo en empaque", tag: "golf" },
-                            { id: "m_golf_cap", text: "Gorra deportiva o visera de golf", sub: "Protección solar obligatoria para 18 hoyos", tag: "golf" },
-                            { id: "m_golf_balls", text: "Bolas de golf (Titleist Pro V1 o similar)", sub: "1 docena / bolas de juego para Almenara", tag: "golf" },
-                            { id: "m_golf_tees", text: "Tees de golf (madera o bambú)", sub: "Surtido de alturas para Driver y hierros", tag: "golf" },
-                            { id: "m_golf_divot_marker", text: "Arreglapiques (Divot tool) & Marcadores de bola", sub: "Reparador de piques y marcador para greens", tag: "golf" },
-                            { id: "m_golf_towel", text: "Toalla de microfibra de golf", sub: "Para limpieza de varillas, palos y bolas", tag: "golf" },
-                            { id: "m_golf_rangefinder", text: "Telémetro láser (Rangefinder) o Reloj GPS de golf", sub: "Medición exacta de distancias (+ cargador)", tag: "golf" },
-                            { id: "m_golf_sunscreen", text: "Protector solar deportivo resistente al sudor (SPF 50+)", sub: "Protección de alta duración para 4-5h de juego", tag: "golf" },
-                            { id: "m_golf_travel_bag", text: "Funda de viaje acolchada para palos", sub: "Protección en bodega o coordinar alquiler en club", tag: "golf" },
-                            { id: "m_golf_thermos", text: "Botella térmica / Termo de agua para la ronda", sub: "Hidratación continua durante los 18 hoyos", tag: "golf" }
-                        ]
-                    },
-                    {
-                        name: "Indumentaria & Accesorios de Playa / Piscina",
-                        icon: "🏖️",
-                        tag: "beach",
-                        badge: "Playa Activa",
-                        items: [
-                            { id: "m_beach_swim_extra", text: "Traje de baño adicional de cambio", sub: "Para rotar tras piscina infinita o solárium", tag: "beach" },
-                            { id: "m_beach_linen_shirt", text: "Camisas de lino fresco / Polos de verano", sub: "Para almuerzos en el Beach Club o terraza", tag: "beach" },
-                            { id: "m_beach_slides", text: "Sandalias de playa / Chanclas impermeables", sub: "Resistentes al agua para piscina y arena", tag: "beach" },
-                            { id: "m_beach_hat", text: "Sombrero de sol / Panamá", sub: "Protección solar distinguida", tag: "beach" },
-                            { id: "m_beach_sunglasses", text: "Gafas de sol polarizadas UV400", sub: "Anti-reflejo para agua y sol andaluz", tag: "beach" },
-                            { id: "m_beach_bag", text: "Bolsa de playa / Mochila impermeable", sub: "Para llevar toalla, cremas y móvil", tag: "beach" },
-                            { id: "m_beach_phone_pouch", text: "Funda impermeable o estanca para smartphone", sub: "Protección contra salpicaduras de agua y arena", tag: "beach" },
-                            { id: "m_beach_sunscreen", text: "Protector solar corporal resistente al agua (SPF 50+)", sub: "Protección de amplio espectro para Costa del Sol", tag: "beach" },
-                            { id: "m_beach_aftersun", text: "Gel hidratante post-solar (After-sun / Aloe Vera)", sub: "Alivio y regeneración tras el sol", tag: "beach" }
-                        ]
-                    },
-                    {
-                        name: "Sugerencias Complementarias (Cenas Michelin & Confort)",
-                        icon: "✨",
-                        badge: "Sugerido",
-                        items: [
-                            { id: "m_panuelo_bolsillo", text: "Pañuelo de bolsillo o corbata de seda", sub: "Para cena de gala en Amós 3★ Michelin / Rosewood Villa Magna" },
-                            { id: "m_flight_socks", text: "Calcetines de descanso / compresión suave", sub: "Para vuelo transatlántico en Business de 8h 35m" },
-                            { id: "m_airpods", text: "Auriculares con cancelación activa de ruido", sub: "Para descanso en vuelos y tren AVE" },
-                            { id: "m_airtag", text: "Apple AirTag en maleta facturada y maletín", sub: "Rastreo de equipaje en tiempo real" }
-                        ]
-                    }
-                ]
+            get milton() {
+                const trip = (appData?.trips || []).find(t => t.id === (currentTripId || activeGlobalPackingTripId)) || (appData?.trips || []).find(t => t.status === 'active') || (appData?.trips || [])[0];
+                return getTravelerPackingSpec('milton', trip);
             },
-            aileen: {
-                name: "Aileen Rosso",
-                icon: "👗",
-                categories: [
-                    {
-                        name: "Checklist Viaje Original (Aileen Rosso)",
-                        icon: "📋",
-                        badge: "Lista Original",
-                        items: [
-                            { id: "a_camisas_larga", text: "Camisas manga larga", sub: "Lino y vestir para cenas y visitas" },
-                            { id: "a_camisas_salir", text: "Camisas de Salir", sub: "Blusas elegantes de seda o satén para cenas" },
-                            { id: "a_camisas_diario", text: "Camisas de Diario", sub: "Tejidos frescos y transpirables" },
-                            { id: "a_mahones", text: "Mahones", sub: "Jeans de corte impecable para tours y traslados" },
-                            { id: "a_pantalones", text: "Pantalones", sub: "Pantalones de vestir / lino para el sur" },
-                            { id: "a_abrigo_pesado", text: "Abrigo pesado", sub: "🌙 Noches de 55°F en Madrid / Opcional según preferencia", badge: "Clima 55°F" },
-                            { id: "a_abrigo_liviano", text: "Abrigo Liviano", sub: "Trench coat liviano / chaqueta de entretiempo" },
-                            { id: "a_fleece", text: "Fleece", sub: "Cárdigan fino o abrigo suave para el avión" },
-                            { id: "a_panuelo", text: "Pañuelo", sub: "Pashmina de seda para brisa, iglesias y aire acondicionado" },
-                            { id: "a_bermuda", text: "Bermuda", sub: "☀️ Shorts elegantes para Sotogrande y paseos" },
-                            { id: "a_correa", text: "Correa", sub: "Accesorio de diario" },
-                            { id: "a_pajama", text: "Pajama", sub: "Pajama fresca de descanso" },
-                            { id: "a_panties", text: "Panties", sub: "Mudas suficientes de algodón o microfibra" },
-                            { id: "a_brazier", text: "Brazier", sub: "Diarios, strapless y de vestir" },
-                            { id: "a_medias_diario", text: "Medias diario", sub: "Uso diario" },
-                            { id: "a_medias_tenis", text: "Medias tenis", sub: "Para calzado deportivo y caminatas" },
-                            { id: "a_ropa_ejercicio", text: "Ropa ejercicio", sub: "Gym y entrenamientos" },
-                            { id: "a_brazier_ejercicios", text: "Brazier ejercicios", sub: "Top deportivo de soporte" },
-                            { id: "a_traje_bano", text: "Traje de baño", sub: "🏊 Piscina y spa (controlado por toggle de Playa)", tag: "beach" },
-                            { id: "a_zapatos_salir", text: "Zapatos de salir", sub: "Tacón cómodo o cuña elegante" },
-                            { id: "a_zapatos_walking", text: "Zapatos diario walking", sub: "Suela plana indispensable para adoquines de Sevilla" },
-                            { id: "a_tenis", text: "Tenis", sub: "Caminatas largas por museos y parques" },
-                            { id: "a_cepillo_dientes", text: "Cepillo dientes", sub: "Aseo dental" },
-                            { id: "a_cepillo_pelo", text: "Cepillo pelo", sub: "Peinado y cepillado" },
-                            { id: "a_chapstik", text: "Chapstik", sub: "Bálsamo labial hidratante" },
-                            { id: "a_corta_unas", text: "Corta uñas", sub: "Corta uñas y lima de viaje" },
-                            { id: "a_dental_floss", text: "Dental floss", sub: "Hilo dental" },
-                            { id: "a_desodorante", text: "Desodorante", sub: "Aseo personal" },
-                            { id: "a_pasta_dientes", text: "Pasta dientes", sub: "Aseo dental" },
-                            { id: "a_perfume", text: "Perfume", sub: "Fragrancia de viaje" },
-                            { id: "a_razuradora", text: "Razuradora", sub: "Rasuradora femenina" },
-                            { id: "a_shampoo", text: "Shampoo", sub: "Cuidado capilar" },
-                            { id: "a_plancha_pelo", text: "Plancha de Pelo", sub: "⚡ Verificar voltaje 110-240V para red de 230V de España", badge: "230V España" },
-                            { id: "a_medicinas", text: "Medicinas", sub: "Botiquín personal y analgésicos" },
-                            { id: "a_cargador_celular", text: "Cargador Celular", sub: "Cable y cargador móvil" },
-                            { id: "a_cargador_reloj", text: "Cargador reloj", sub: "Cargador Smartwatch" },
-                            { id: "a_prendas", text: "Prendas", sub: "Joyero de viaje seguro en bolso de mano" },
-                            { id: "a_voltage_converter", text: "Voltage converter", sub: "Adaptador europeo Tipo C/F (230V / 50Hz)", badge: "Enchufe EU" }
-                        ]
-                    },
-                    {
-                        name: "Acompañamiento / Indumentaria de Golf",
-                        icon: "⛳",
-                        tag: "golf",
-                        badge: "Golf Activo",
-                        items: [
-                            { id: "a_golf_polo", text: "Polo de golf / Top técnico con cuello", sub: "Etiqueta exigida en casa club y campo de golf", tag: "golf" },
-                            { id: "a_golf_skort", text: "Pantalones / Shorts / Falda-pantalón de golf", sub: "Tejido técnico elástico y transpirable", tag: "golf" },
-                            { id: "a_golf_shoes", text: "Zapatos de golf o tenis de suela plana", sub: "Aptos para caminar sobre césped de campo", tag: "golf" },
-                            { id: "a_golf_visor", text: "Visera o gorra deportiva de golf", sub: "Protección solar chic para 18 hoyos", tag: "golf" },
-                            { id: "a_golf_sunglasses", text: "Gafas de sol con alta protección UV", sub: "Descanso visual en campo abierto", tag: "golf" },
-                            { id: "a_golf_sunscreen", text: "Protector solar facial & corporal deportivo SPF 50+", sub: "Resistente a la exposición continua al aire libre", tag: "golf" }
-                        ]
-                    },
-                    {
-                        name: "Indumentaria & Accesorios de Playa / Piscina",
-                        icon: "🏖️",
-                        tag: "beach",
-                        badge: "Playa Activa",
-                        items: [
-                            { id: "a_beach_swim_extra", text: "Traje de baño adicional de cambio", sub: "Para alternar en spa, solárium y piscinas", tag: "beach" },
-                            { id: "a_beach_coverup", text: "Salida de baño / Kimono / Pareo elegante", sub: "Para tránsito del spa a la piscina o solárium", tag: "beach" },
-                            { id: "a_beach_sandals", text: "Sandalias de playa / Chanclas de diseño impermeables", sub: "Calzado para áreas húmedas y piscina", tag: "beach" },
-                            { id: "a_beach_hat", text: "Sombrero de sol / Pamina de ala ancha", sub: "Protección solar chic para la Costa del Sol", tag: "beach" },
-                            { id: "a_beach_tote", text: "Bolso de playa / Capazo o Tote bag amplio", sub: "Para llevar toalla, libros y cosmética", tag: "beach" },
-                            { id: "a_beach_phone_pouch", text: "Funda impermeable o estanca para smartphone", sub: "Protección total contra agua y arena", tag: "beach" },
-                            { id: "a_beach_sunscreen", text: "Protector solar corporal resistente al agua SPF 50+", sub: "Protección de amplio espectro", tag: "beach" },
-                            { id: "a_beach_aftersun", text: "Loción o gel post-solar calmante (After-sun)", sub: "Hidratación profunda post-bronceado", tag: "beach" }
-                        ]
-                    },
-                    {
-                        name: "Sugerencias Complementarias (Cenas VIP & Belleza)",
-                        icon: "✨",
-                        badge: "Sugerido",
-                        items: [
-                            { id: "a_vestidos_dia", text: "Vestidos midi vaporosos de lino para el día", sub: "Frescura distinguida para Sevilla y bodegas" },
-                            { id: "a_vestidos_noche", text: "Vestidos de cóctel / noche de gala", sub: "Para Rosewood Villa Magna y Hotel Colón" },
-                            { id: "a_bolso_crossbody", text: "Bolso cruzado seguro (Crossbody) y Clutch de noche", sub: "Seguridad en tours y elegancia en cenas" },
-                            { id: "a_protector_facial", text: "Protector solar facial antiedad SPF 50+ de amplio espectro", sub: "Protección diaria antienvejecimiento indispensable" },
-                            { id: "a_crema_hidratante", text: "Sérum facial ultra-hidratante & Crema intensiva", sub: "Recuperación cutánea tras vuelo y clima seco" },
-                            { id: "a_desmaquillante", text: "Toallitas desmaquillantes / Agua micelar viaje", sub: "Limpieza facial nocturna" },
-                            { id: "a_airtag", text: "Apple AirTag en cartera de mano y maleta", sub: "Localización precisa en iPhone" }
-                        ]
-                    }
-                ]
+            get aileen() {
+                const trip = (appData?.trips || []).find(t => t.id === (currentTripId || activeGlobalPackingTripId)) || (appData?.trips || []).find(t => t.status === 'active') || (appData?.trips || [])[0];
+                return getTravelerPackingSpec('aileen', trip);
             },
-            shared: {
-                name: "Equipaje Compartido",
-                icon: "🧳",
-                categories: [
-                    {
-                        name: "Documentos, Finanzas & Fidelización VIP",
-                        icon: "🛂",
-                        badge: "VIP",
-                        items: [
-                            { id: "s_pasaportes", text: "Pasaportes vigentes (Milton & Aileen)", sub: "Mínimo 6 meses de vigencia y copias en la nube" },
-                            { id: "s_amex", text: "Tarjeta American Express Platinum", sub: "Acceso a Centurion Lounges, Delta Sky Club y beneficios FHR" },
-                            { id: "s_loyalty", text: "Tarjetas de fidelización digitales (Delta Platinum, Mosaic 3, Iberia Plus)", sub: "Prioridad de equipaje y embarque" },
-                            { id: "s_ave_tickets", text: "Billetes de tren Renfe AVE Confort (Localizador 73MWSR)", sub: "Coche 1, Asientos 9B y 9C (25 Sep)" },
-                            { id: "s_hotel_vmagna", text: "Confirmación Rosewood Villa Magna Madrid (32298SG208578)", sub: "Paseo de la Castellana 22, Barrio de Salamanca" }
-                        ]
-                    },
-                    {
-                        name: "Conectividad, Carga & Dispositivos",
-                        icon: "⚡",
-                        badge: "Tech",
-                        items: [
-                            { id: "s_adaptadores", text: "2x Adaptadores de enchufe europeo (Tipo C/F)", sub: "Para enchufes redondos de pared en España" },
-                            { id: "s_cargador_gan", text: "Cargador de pared GaN 65W multidispositivo (USB-C/A)", sub: "Carga simultánea de iPhones, Apple Watch y iPads" },
-                            { id: "s_cables", text: "Cables de carga rápida largos (USB-C y Lightning 2m)", sub: "Para habitaciones de hotel y transporte" },
-                            { id: "s_powerbank", text: "Batería externa portátil (PowerBank 10,000 mAh)", sub: "🔋 Llevar siempre en equipaje de mano (prohibido en bodega)" },
-                            { id: "s_audio_adapter", text: "Adaptador de audio para cabina de avión (Jack 3.5mm o Bluetooth)", sub: "Para conectar auriculares al sistema de entretenimiento de vuelo" }
-                        ]
-                    },
-                    {
-                        name: "Botiquín de Viaje & Confort en Ruta",
-                        icon: "💊",
-                        badge: "Salud",
-                        items: [
-                            { id: "s_compeed", text: "Curitas hidrocoloides para ampollas (tipo Compeed)", sub: "Salvavidas para caminatas en adoquines de Sevilla y Madrid" },
-                            { id: "s_digestivos", text: "Antiácidos / Digestivos", sub: "Para degustar la gastronomía española sin molestias" },
-                            { id: "s_analgesicos", text: "Analgésicos (Ibuprofeno, Paracetamol)", sub: "Alivio general para dolores o fatiga" },
-                            { id: "s_gotas_ojos", text: "Gotas oculares lubricantes (Lágrimas artificiales)", sub: "Para evitar sequedad ocular en vuelos largos" },
-                            { id: "s_toallitas", text: "Toallitas desinfectantes de viaje", sub: "Para superficies de avión y tren" }
-                        ]
-                    }
-                ]
+            get shared() {
+                const trip = (appData?.trips || []).find(t => t.id === (currentTripId || activeGlobalPackingTripId)) || (appData?.trips || []).find(t => t.status === 'active') || (appData?.trips || [])[0];
+                return getTravelerPackingSpec('shared', trip);
             }
         };
 
         function getTravelerPackingStats(tripId, travelerKey) {
-            const spec = TRAVELER_PACKING_SPECS[travelerKey];
+            const trip = (appData.trips || []).find(t => t.id === tripId) || (appData.trips || [])[0];
+            const spec = getTravelerPackingSpec(travelerKey, trip);
             if (!spec) return { total: 0, checked: 0, pct: 0 };
-            const trip = (appData.trips || []).find(t => t.id === tripId);
             const acts = trip?.activitiesConfig || { golf: true, beach: true };
             const storageKey = `packing_checked_${tripId}`;
             const checkedState = JSON.parse(localStorage.getItem(storageKey) || '{}');
@@ -2064,6 +2454,46 @@ html_content << <<-'HTML_FOOTER'
             const aStats = getTravelerPackingStats(trip.id, 'aileen');
             const sStats = getTravelerPackingStats(trip.id, 'shared');
             const currentStats = currentPackingTraveler === 'milton' ? mStats : (currentPackingTraveler === 'aileen' ? aStats : sStats);
+            const currentSpec = getTravelerPackingSpec(currentPackingTraveler, trip);
+
+            // Compute dynamic climate breakdown
+            const lowF = climate.tempLowF != null ? climate.tempLowF : 55;
+            const highF = climate.tempHighF != null ? climate.tempHighF : 80;
+            const isCold = lowF < 50;
+
+            let climateTitle = `${climate.icon || '🌤️'} Previsión Climática · ${trip.destination || trip.title} (${lowF}°F – ${highF}°F):`;
+            let climateBreakdownHtml = '';
+
+            if (trip.id === 'trip-europe-autumn-2026') {
+                climateTitle = `🍂 Previsión Climática · Gran Otoño Europeo (${lowF}°F a ${highF}°F):`;
+                climateBreakdownHtml = `
+                    <div style="margin-bottom: 4px;">• <strong>París:</strong> 41°F a 59°F · Otoño fresco, niebla matutina y posibles lloviznas (Le Meurice, Louvre, paseos por el Sena).</div>
+                    <div style="margin-bottom: 4px;">• <strong>Borgoña (Beaune & Côte d'Or):</strong> 39°F a 57°F · Mínimas frías matutinas (39°F) y cavas subterráneas centenarias a 53°F constantes con alta humedad (Maison Joseph Drouhin y terroirs Grand Cru).</div>
+                    <div style="margin-bottom: 6px;">• <strong>Puglia & Matera (Sur de Italia):</strong> 52°F a 72°F · Clima mediterráneo templado, brisa costera en el yate Antares 11 (Polignano a Mare) y calles adoquinadas de piedra blanca.</div>
+                    <div style="padding-top: 8px; border-top: 1px dashed #86EFAC; font-size: 0.74rem; color: #14532D; line-height: 1.45;">
+                        ❄️ <strong>Ajuste Térmico de Empaque Automático (${lowF}°F–${highF}°F):</strong> El checklist se ha adaptado a las temperaturas bajas esperadas en Francia: <strong>Abrigo pesado / Chaquetón de invierno</strong> y <strong>Trench impermeable</strong> esenciales para mínimas de 39°F; <strong>Fleece térmico / Cárdigan grueso de cashmere</strong> para las cavas a 53°F; y <strong>bufanda abrigada</strong>. Para Puglia se incluye cápsula náutica con cortavientos y calzado antideslizante para el yate. ⛳ Golf se mantiene desactivado al no formar parte de este itinerario.
+                    </div>
+                `;
+            } else if (trip.id === 'trip-spain-andalucia-sep2026') {
+                climateTitle = `🌤️ Previsión Climática · España (18–29 Sep):`;
+                climateBreakdownHtml = `
+                    <div style="margin-bottom: 3px;">• <strong>Sotogrande (Costa del Sol):</strong> 64°F a 79°F · Soleado mediterráneo (golf en Almenara, spa y piscinas).</div>
+                    <div style="margin-bottom: 3px;">• <strong>Sevilla:</strong> 64°F a 84°F · Caluroso y seco de día, noches cálidas (caminatas monumentales por adoquines).</div>
+                    <div style="margin-bottom: 6px;">• <strong>Madrid:</strong> 55°F a 75°F · Noches frescas (55°F) y tardes templadas (cenas elegantes en Rosewood Villa Magna).</div>
+                    <div style="padding-top: 6px; border-top: 1px dashed #86EFAC; font-size: 0.74rem; color: #14532D;">
+                        📋 <strong>Checklist Viaje integrado al 100%:</strong> Ropa formal y casual adaptada a clima andaluz y noches frescas de Madrid (55°F). Golf y Playa activos.
+                    </div>
+                `;
+            } else {
+                climateBreakdownHtml = `
+                    <div style="margin-bottom: 4px;">• <strong>${trip.destination}:</strong> ${lowF}°F a ${highF}°F · ${climate.condition || 'Previsión de temporada'}.</div>
+                    <div style="margin-bottom: 6px; color: #15803D;">• <strong>Pronóstico:</strong> ${climate.summary || 'Condiciones climáticas de viaje'}</div>
+                    <div style="padding-top: 6px; border-top: 1px dashed #86EFAC; font-size: 0.74rem; color: #14532D;">
+                        ${isCold ? `❄️ <strong>Clima Frío Detectado (${lowF}°F):</strong> El checklist prioriza capas térmicas, abrigo pesado obligatorio, trench impermeable y calzado cerrado abrigado.` : `☀️ <strong>Clima Templado/Cálido:</strong> Ropa ligera y transpirable con protección solar.`}
+                        ${climate.packingAdvice ? `<br>💡 <em>${climate.packingAdvice}</em>` : ''}
+                    </div>
+                `;
+            }
 
             container.innerHTML = `
                 <!-- Activity Toggles: Golf & Playa/Piscina -->
@@ -2120,7 +2550,7 @@ html_content << <<-'HTML_FOOTER'
                     <div style="font-size: 0.72rem; color: var(--text-muted); line-height: 1.35;">
                         ${config.mode === 'carry_on' 
                             ? '⚡ <strong>Modo Carry-On activo:</strong> Líquidos restringidos a envases ≤100 ml en bolsa transparente. Equipaje de cabina sin esperas en carrusel.' 
-                            : '✨ <strong>Modo Maleta en Bodega activo:</strong> Franquicia Business (2x gratis de 32 kg c/u con JetBlue Mosaic 3 / Iberia Business). Espacio completo para ropa formal, calzado y palos de golf.'}
+                            : '✨ <strong>Modo Maleta en Bodega activo:</strong> Franquicia Business (2x gratis de 32 kg c/u con JetBlue Mosaic 3 / Iberia Business). Espacio completo para ropa formal, calzado y capas de abrigo.'}
                     </div>
                 </div>
 
@@ -2143,25 +2573,20 @@ html_content << <<-'HTML_FOOTER'
                     </button>
                 </div>
 
-                <!-- Weather Advisory Card -->
+                <!-- Dynamic Weather Advisory Card -->
                 <div class="weather-advisory-box">
                     <div style="font-weight: 800; display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
-                        <span>🌤️ Previsión Climática · España (18–29 Sep):</span>
-                        <span style="font-size: 0.7rem; background: #DCFCE7; color: #15803D; padding: 2px 8px; border-radius: 12px; font-weight: 700;">12 Días</span>
+                        <span>${climateTitle}</span>
+                        <span style="font-size: 0.7rem; background: #DCFCE7; color: #15803D; padding: 2px 8px; border-radius: 12px; font-weight: 700;">${days} Días</span>
                     </div>
-                    <div style="margin-bottom: 3px;">• <strong>Sotogrande (Costa del Sol):</strong> 64°F a 79°F · Soleado mediterráneo (golf en Almenara, spa y piscinas).</div>
-                    <div style="margin-bottom: 3px;">• <strong>Sevilla:</strong> 64°F a 84°F · Caluroso y seco de día, noches cálidas (caminatas monumentales por adoquines).</div>
-                    <div style="margin-bottom: 6px;">• <strong>Madrid:</strong> 55°F a 75°F · Noches frescas (55°F) y tardes templadas (cenas elegantes en Rosewood Villa Magna).</div>
-                    <div style="padding-top: 6px; border-top: 1px dashed #86EFAC; font-size: 0.74rem; color: #14532D;">
-                        📋 <strong>Checklist Viaje integrado al 100%:</strong> Contiene todas tus prendas y accesorios originales. Para las noches frescas de Madrid (55°F), tu <em>Jacket pesado / Abrigo pesado</em> está disponible y marcado para llevar según tu preferencia. Activa o desactiva Golf y Playa con los botones superiores para adaptar el equipaje dinámicamente.
-                    </div>
+                    ${climateBreakdownHtml}
                 </div>
 
                 <!-- Luggage Config & Progress Card -->
                 <div class="packing-progress-wrapper">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                         <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-main);">
-                            Progreso de ${TRAVELER_PACKING_SPECS[currentPackingTraveler].name}
+                            Progreso de ${currentSpec.name}
                         </span>
                         <span style="font-size: 0.8rem; font-weight: 800; color: var(--gold-dark);">
                             ${currentStats.checked} de ${currentStats.total} (${currentStats.pct}%)
@@ -2183,7 +2608,7 @@ html_content << <<-'HTML_FOOTER'
 
                 <!-- Custom Item Input -->
                 <div style="display: flex; gap: 8px; margin-bottom: 14px;">
-                    <input type="text" class="custom-item-input" style="flex: 1; background: #FFF; border: 1px solid var(--border-subtle); border-radius: 12px; padding: 10px 14px; font-size: 0.8rem; outline: none;" placeholder="Añadir a la maleta de ${TRAVELER_PACKING_SPECS[currentPackingTraveler].name.split(' ')[0]}...">
+                    <input type="text" class="custom-item-input" style="flex: 1; background: #FFF; border: 1px solid var(--border-subtle); border-radius: 12px; padding: 10px 14px; font-size: 0.8rem; outline: none;" placeholder="Añadir a la maleta de ${currentSpec.name.split(' ')[0]}...">
                     <button class="header-btn" onclick="addCustomPackingItem('${trip.id}', this)" style="padding: 0 16px;">➕ Añadir</button>
                 </div>
 
@@ -2387,7 +2812,7 @@ html_content << <<-'HTML_FOOTER'
             const acts = trip.activitiesConfig || { golf: true, beach: true };
             const storageKey = `packing_checked_${trip.id}`;
             const checkedState = JSON.parse(localStorage.getItem(storageKey) || '{}');
-            const spec = TRAVELER_PACKING_SPECS[currentPackingTraveler] || TRAVELER_PACKING_SPECS.milton;
+            const spec = getTravelerPackingSpec(currentPackingTraveler, trip);
 
             const categories = [];
 
@@ -2485,16 +2910,16 @@ html_content << <<-'HTML_FOOTER'
         }
 
         function resetPackingChecklist(tripId) {
-            if (!confirm(`¿Deseas desmarcar todos los artículos de la maleta de ${TRAVELER_PACKING_SPECS[currentPackingTraveler].name}?`)) return;
+            const trip = (appData.trips || []).find(t => t.id === tripId) || (appData.trips || [])[0];
+            const spec = getTravelerPackingSpec(currentPackingTraveler, trip);
+            if (!confirm(`¿Deseas desmarcar todos los artículos de la maleta de ${spec.name}?`)) return;
             const storageKey = `packing_checked_${tripId}`;
             const checkedState = JSON.parse(localStorage.getItem(storageKey) || '{}');
-            const spec = TRAVELER_PACKING_SPECS[currentPackingTraveler];
             if (spec) {
                 spec.categories.forEach(c => {
                     c.items.forEach(i => delete checkedState[i.id]);
                 });
             }
-            const trip = (appData.trips || []).find(t => t.id === tripId);
             (trip?.customPackingList || []).filter(c => c.traveler === currentPackingTraveler).forEach(i => delete checkedState[i.id]);
             localStorage.setItem(storageKey, JSON.stringify(checkedState));
             refreshAllPackingComponents(tripId);
@@ -2512,19 +2937,20 @@ html_content << <<-'HTML_FOOTER'
             const val = (input?.value || '').trim();
             if (!val) return;
 
-            const trip = (appData.trips || []).find(t => t.id === tripId);
+            const trip = (appData.trips || []).find(t => t.id === tripId) || (appData.trips || [])[0];
+            const spec = getTravelerPackingSpec(currentPackingTraveler, trip);
             if (trip) {
                 if (!trip.customPackingList) trip.customPackingList = [];
                 trip.customPackingList.push({
                     id: 'custom_' + Date.now(),
                     text: val,
-                    sub: `Añadido para ${TRAVELER_PACKING_SPECS[currentPackingTraveler].name}`,
+                    sub: `Añadido para ${spec.name}`,
                     traveler: currentPackingTraveler
                 });
                 input.value = '';
                 saveState();
                 refreshAllPackingComponents(tripId);
-                showToast(`Artículo añadido a la maleta de ${TRAVELER_PACKING_SPECS[currentPackingTraveler].name.split(' ')[0]}`);
+                showToast(`Artículo añadido a la maleta de ${spec.name.split(' ')[0]}`);
             }
         }
 
