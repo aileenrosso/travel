@@ -71,17 +71,47 @@ rescue => e
   ""
 end
 
+def extract_image_text_macos(image_path)
+  escaped = image_path.gsub('\\', '\\\\').gsub('"', '\\"')
+  jxa = <<~JXA
+    ObjC.import("Vision");
+    ObjC.import("AppKit");
+    const url = $.NSURL.fileURLWithPath("#{escaped}");
+    const req = $.VNRecognizeTextRequest.alloc.init;
+    req.recognitionLevel = $.VNRequestTextRecognitionLevelAccurate;
+    const handler = $.VNImageRequestHandler.alloc.initWithURLOptions(url, $({}));
+    handler.performRequestsError($([req]), null);
+    const results = req.results;
+    const lines = [];
+    if (results && !results.isNil()) {
+      for (let i = 0; i < results.count; i++) {
+        const obs = results.objectAtIndex(i);
+        const top = obs.topCandidates(1).objectAtIndex(0);
+        lines.push(ObjC.unwrap(top.string));
+      }
+    }
+    lines.join("\\n");
+  JXA
+  IO.popen(["osascript", "-l", "JavaScript", "-e", jxa], err: [:child, :out], &:read).force_encoding("UTF-8")
+rescue => e
+  ""
+end
+
 def auto_ingest_pdf_files!(state_data)
   existing_pnrs = []
+  existing_hotel_confs = []
   (state_data["trips"] || []).each do |trip|
     (trip["flights"] || []).each do |fl|
       existing_pnrs << fl["pnr"].to_s.upcase if fl["pnr"]
     end
+    (trip["lodgings"] || []).each do |ld|
+      existing_hotel_confs << ld["conf"].to_s.upcase if ld["conf"]
+    end
   end
 
+  # 1. Scan PDFs for new flight confirmations
   Dir.glob(File.join(LOCAL_TRAVEL_DIR, "*.{pdf,PDF}")).each do |pdf_file|
     bname = File.basename(pdf_file)
-    # Check if JetBlue confirmation PDF
     if bname =~ /JetBlue.*confirmation.*([A-Z0-9]{6})/i
       pnr = $1.upcase
       next if existing_pnrs.include?(pnr)
@@ -136,6 +166,50 @@ def auto_ingest_pdf_files!(state_data)
       end
     end
   end
+
+  # 2. Scan WhatsApp Images & Screenshots via macOS Vision OCR
+  Dir.glob(File.join(LOCAL_TRAVEL_DIR, "*.{jpg,JPG,jpeg,JPEG,png,PNG,heic,HEIC,webp,WEBP}")).each do |img_file|
+    bname = File.basename(img_file)
+    next if bname =~ /^(icon-|apple-touch-icon)/i
+
+    ocr_text = extract_image_text_macos(img_file)
+    next if ocr_text.nil? || ocr_text.strip.empty?
+
+    conf_match = ocr_text.match(/CONFIRMATION\s+NUMBER\s*\n\s*([A-Z0-9\-]{6,15})/i)
+    if conf_match
+      conf_num = conf_match[1].strip.upcase
+      already_has = existing_hotel_confs.any? { |c| c.include?(conf_num) }
+      next if already_has
+
+      dates = ocr_text.scan(/(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},\s+\d{4}/i).flatten
+      arr_date = ocr_text[/(?:ARRIVAL\s+DATE.*?\n\s*)?([A-Za-z]+\s+\d{1,2},\s+\d{4})/i, 1] || "Confirmado"
+      dep_date = ocr_text[/DEPARTURE\s+DATE.*?\n\s*([A-Za-z]+\s+\d{1,2},\s+\d{4})/im, 1] || "Confirmado"
+
+      hotel_name = if ocr_text =~ /stay\s+at\s+([^:]+):/i
+                     $1.gsub(/\s+/, " ").strip
+                   else
+                     "Reserva de Hotel (#{bname})"
+                   end
+
+      active_trip = (state_data["trips"] || []).find { |t| t["status"] == "active" } || (state_data["trips"] || []).first
+      if active_trip
+        active_trip["lodgings"] ||= []
+        active_trip["lodgings"].unshift({
+          "name" => hotel_name,
+          "city" => hotel_name.include?("Paris") ? "París" : active_trip["country"],
+          "address" => hotel_name,
+          "image" => "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=800&q=80",
+          "checkin" => arr_date,
+          "checkout" => dep_date,
+          "conf" => "Conf: #{conf_num}",
+          "cost" => "Confirmado desde Imagen WhatsApp",
+          "mapQuery" => hotel_name.gsub(/\s+/, "+")
+        })
+        existing_hotel_confs << "CONF: #{conf_num}"
+        puts "[AUTO-OCR] Ingested new Hotel '#{hotel_name}' (Conf: #{conf_num}) from #{bname}"
+      end
+    end
+  end
 end
 
 def ingest_directory_updates(state_data)
@@ -143,8 +217,9 @@ def ingest_directory_updates(state_data)
   discovered_files = []
 
   scan_dirs.each do |dir|
-    Dir.glob(File.join(dir, "**", "*.{pdf,PDF,json,JSON,txt,eml}")).each do |f|
-      discovered_files << f unless f.include?("state.json") || f.include?("manifest.json")
+    Dir.glob(File.join(dir, "**", "*.{pdf,PDF,jpg,JPG,jpeg,JPEG,png,PNG,heic,HEIC,docx,xlsx,json,JSON,txt,eml}")).each do |f|
+      next if f.include?("state.json") || f.include?("manifest.json") || File.basename(f) =~ /^(icon-|apple-touch-icon)/i
+      discovered_files << f
     end
   end
 
@@ -153,7 +228,7 @@ def ingest_directory_updates(state_data)
   today = Date.today
   archive_and_classify_trips!(state_data, today)
 
-  state_data["version"] = "5.7"
+  state_data["version"] = "5.8"
   state_data["lastUpdated"] = Time.now.strftime("%Y-%m-%d %H:%M:%S")
   state_data["discoveredFilesCount"] = discovered_files.size
 
@@ -1437,7 +1512,7 @@ html_content << <<-'HTML_FOOTER'
                 }, 350);
             }
 
-            const cached = localStorage.getItem('travel_planner_v57_state');
+            const cached = localStorage.getItem('travel_planner_v58_state');
             let useEmbedded = true;
             if (cached) {
                 try {
@@ -1474,7 +1549,7 @@ html_content << <<-'HTML_FOOTER'
 
         function saveState() {
             if (!appData) return;
-            localStorage.setItem('travel_planner_v57_state', JSON.stringify(appData));
+            localStorage.setItem('travel_planner_v58_state', JSON.stringify(appData));
         }
 
         async function silentCloudCheck() {
@@ -2277,10 +2352,11 @@ html_content << <<-'HTML_FOOTER'
                         ${imgHtml}
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                             <span style="font-size: 0.72rem; font-weight: 800; color: var(--gold-dark);">🏨 ${lodg.city || trip.country}</span>
-                            <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted);">${lodg.conf}</span>
+                            <span style="font-size: 0.72rem; font-weight: 800; color: var(--gold-dark); background: var(--gold-light); padding: 2px 8px; border-radius: 8px;">${lodg.conf}</span>
                         </div>
                         <div style="font-family: 'Cormorant Garamond', serif; font-size: 1.35rem; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">${lodg.name}</div>
                         <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 6px;">📍 ${lodg.address}</div>
+                        ${(lodg.checkin || lodg.checkout) ? `<div style="font-size: 0.74rem; color: var(--text-main); background: #FAF9F6; border: 1px solid var(--border-subtle); padding: 6px 10px; border-radius: 8px; margin-bottom: 6px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;"><span>🔑 <strong>Check-in:</strong> ${lodg.checkin || '-'}</span><span>🚪 <strong>Check-out:</strong> ${lodg.checkout || '-'}</span></div>` : ''}
                         <div style="font-size: 0.74rem; background: var(--gold-light); padding: 5px 10px; border-radius: 8px; margin-bottom: 8px;">✨ ${lodg.cost}</div>
                         <div style="display: flex; gap: 8px;">
                             ${lodg.phone ? `<a href="tel:${lodg.phone.replace(/[^0-9+]/g, '')}" class="card-action-btn" style="flex: 1;"><span style="font-size: 0.9rem;">📞</span> Llamar</a>` : ''}
@@ -3294,6 +3370,7 @@ html_content << <<-'HTML_FOOTER'
                             <div>✈️ <strong>Delta Air Lines:</strong> ${loy.delta}</div>
                             <div>💎 <strong>JetBlue Airways:</strong> ${loy.jetblue}</div>
                             <div>🇪🇸 <strong>Iberia Plus:</strong> ${loy.iberia}</div>
+                            ${loy.marriott ? `<div>🏨 <strong>Marriott Bonvoy:</strong> ${loy.marriott}</div>` : ''}
                             <div>💳 <strong>American Express:</strong> ${loy.amex}</div>
                         </div>
                     </div>

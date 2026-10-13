@@ -1,7 +1,7 @@
 {
-  "version": "5.7",
+  "version": "5.8",
   "appName": "Travel Planner",
-  "lastUpdated": "2026-10-12 23:09:19",
+  "lastUpdated": "2026-10-12 23:20:24",
   "travelersProfile": {
     "primaryTravelers": "Milton Cruz & Aileen Rosso",
     "groupMembers": [
@@ -14,9 +14,14 @@
       "delta": "Platinum Medallion (SkyTeam Elite Plus) — SkyPriority, Delta Sky Club / Lounge, upgrades",
       "jetblue": "Mosaic 3 — TrueBlue Aileen: 2009139422 · Milton: 2009139624 — 2 maletas gratis, embarque prioritario",
       "iberia": "Iberia Plus — Aileen: 127217016 · Milton: JCH8028",
+      "marriott": "Marriott Bonvoy Gold Elite — +25% Elite Bonus Points, 500 pts Welcome Gift, Room Upgrade & Late Check-out",
       "amex": "The Platinum Card — Centurion Lounges, Delta Sky Club, FHR Benefits, Room Upgrades, Late Check-out"
     },
     "emergencyContacts": [
+      {
+        "label": "Prince de Galles Paris Concierge (Luxury Collection)",
+        "number": "+33 1 53 23 77 77"
+      },
       {
         "label": "Renfe Atención al Cliente / AVE VIP",
         "number": "+34 912 320 320"
@@ -816,10 +821,23 @@
       ],
       "lodgings": [
         {
+          "name": "Prince de Galles, a Luxury Collection Hotel, Paris",
+          "city": "París (Avenue George V)",
+          "address": "33 Avenue George V, 75008 París, Francia",
+          "phone": "+33 1 53 23 77 77",
+          "image": "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=800&q=80",
+          "checkin": "Lun 19 Oct 2026",
+          "checkout": "Mar 20 Oct 2026",
+          "conf": "Conf: 84958178",
+          "cost": "Confirmado (1 Noche: 19–20 Oct) · Marriott Bonvoy Gold Elite · +25% Bonus Points & 500 pts Welcome Gift",
+          "mapQuery": "Prince+de+Galles+33+Avenue+George+V+Paris"
+        },
+        {
           "name": "Hôtel Le Meurice (Dorchester Collection)",
-          "city": "París",
+          "city": "París (Rue de Rivoli)",
           "host": "Marc Letellier (Diamond Club Specialist)",
           "address": "228 Rue de Rivoli, 75001 París, Francia",
+          "phone": "+33 1 87 16 44 50",
           "image": "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80",
           "checkin": "Mar 20 Oct (desde 15:00)",
           "checkout": "Jue 22 Oct (hasta 12:00)",
@@ -832,6 +850,7 @@
           "city": "Borgoña (Beaune)",
           "host": "Nathalie (Responsable Réservation)",
           "address": "10 Boulevard Maréchal Foch, 21200 Beaune, Francia",
+          "phone": "+33 3 80 24 01 01",
           "image": "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80",
           "checkin": "Jue 22 Oct (desde 16:00)",
           "checkout": "Dom 25 Oct (hasta 11:00)",
@@ -905,27 +924,37 @@
         {
           "date": "Lun 19 Oct",
           "dest": "París",
-          "title": "Escala VIP en Madrid & Llegada a París CDG",
+          "title": "Escala VIP en Madrid, Llegada a París & Check-in Prince de Galles",
           "items": [
             "11:35 AM Aterrizaje en Madrid Barajas (MAD T4S)",
             "Escala holgada de 4h 10m en la Sala VIP Velázquez T4S (duchas, tapas y descanso)",
             "15:45 PM Conexión en vuelo IB 589 a París Charles de Gaulle (CDG T3)",
-            "17:55 PM Aterrizaje en París. Chofer privado en minivan Mercedes para traslado al hotel",
-            "Noche de adaptación horaria y cena ligera en París"
+            "17:55 PM Aterrizaje en París CDG. Traslado privado hacia el Triangle d'Or (33 Avenue George V)",
+            "Check-in en Prince de Galles, a Luxury Collection Hotel, Paris (1 Noche: 19–20 Oct · Conf: 84958178 · Marriott Bonvoy Gold Elite)",
+            "Cena de autor en Akira Back Paris o 19.20 Bar dentro del hotel y descanso en Avenue George V"
           ],
           "lunchOptions": [
             {
               "name": "Sala VIP Velázquez (Madrid T4S)",
               "query": "Iberia VIP Lounge Velazquez Madrid T4S"
+            },
+            {
+              "name": "Akira Back Paris (Prince de Galles)",
+              "query": "Akira Back Prince de Galles Paris"
+            },
+            {
+              "name": "19.20 by Norbert Tarayre (Prince de Galles)",
+              "query": "19.20 Norbert Tarayre Prince de Galles Paris"
             }
           ]
         },
         {
           "date": "Mar 20 Oct",
           "dest": "París",
-          "title": "Bienvenida del Grupo & Check-in en Le Meurice",
+          "title": "Check-out Prince de Galles, Reunión del Grupo & Check-in en Le Meurice",
           "items": [
-            "Reunión oficial del grupo de 6 viajeros en París",
+            "Mañana en Avenue George V (Champs-Élysées) y check-out de Prince de Galles (Conf: 84958178)",
+            "Traslado hacia Rue de Rivoli y reunión oficial del grupo de 6 viajeros en París",
             "Check-in en Hôtel Le Meurice (Rue de Rivoli) con upgrade Diamond Club a Superior Room",
             "Copa de champagne de bienvenida frente a las Tullerías",
             "Tarde libre: Paseo relajado por el Jardin des Tuileries y Place Vendôme",
@@ -1274,5 +1303,5 @@
       "completed": false
     }
   ],
-  "discoveredFilesCount": 45
+  "discoveredFilesCount": 69
 }
