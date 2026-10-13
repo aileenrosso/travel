@@ -7,6 +7,18 @@ PORT = 8080
 TRAVEL_DIR = LOCAL_TRAVEL_DIR
 
 
+def auto_push_to_github!
+  Dir.chdir(TRAVEL_DIR) do
+    status = `git status --porcelain state.json index.html 2>/dev/null`.strip
+    unless status.empty?
+      puts "[GitHub Auto-Push] Pushing updated state.json & index.html to GitHub Pages..."
+      system("git add state.json index.html && git commit -m 'Auto-sync OneDrive updates' && git push origin main")
+    end
+  end
+rescue => e
+  puts "[GitHub Auto-Push] Warning: #{e.message}"
+end
+
 class SyncServlet < WEBrick::HTTPServlet::AbstractServlet
   def do_OPTIONS(req, res)
     res['Access-Control-Allow-Origin'] = '*'
@@ -27,7 +39,9 @@ class SyncServlet < WEBrick::HTTPServlet::AbstractServlet
 
   def handle_sync(req, res)
     puts "\n[API /api/sync] Triggered sync request from client..."
+    load File.join(TRAVEL_DIR, "build_index.rb")
     updated_state = build_pwa!
+    Thread.new { auto_push_to_github! }
     res['Access-Control-Allow-Origin'] = '*'
     res['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
     res['Access-Control-Allow-Headers'] = '*'
@@ -54,7 +68,7 @@ Thread.new do
   # Initial snapshot
   scan_dirs.each do |dir|
     Dir.glob(File.join(dir, "**", "*")).each do |f|
-      next if f.include?("state.json") || f.include?("index.html") || f.include?(".git")
+      next if f.include?("state.json") || f.include?("index.html") || f.include?(".git") || f.include?("server.log")
       last_snapshot[f] = File.mtime(f) rescue nil if File.file?(f)
     end
   end
@@ -64,7 +78,7 @@ Thread.new do
     current_snapshot = {}
     scan_dirs.each do |dir|
       Dir.glob(File.join(dir, "**", "*")).each do |f|
-        next if f.include?("state.json") || f.include?("index.html") || f.include?(".git")
+        next if f.include?("state.json") || f.include?("index.html") || f.include?(".git") || f.include?("server.log")
         current_snapshot[f] = File.mtime(f) rescue nil if File.file?(f)
       end
     end
@@ -74,8 +88,9 @@ Thread.new do
       begin
         load File.join(TRAVEL_DIR, "build_index.rb")
         build_pwa!
+        auto_push_to_github!
         last_snapshot = current_snapshot
-        puts "[OneDrive Watcher] Auto-sync complete at #{Time.now.strftime('%H:%M:%S')}."
+        puts "[OneDrive Watcher] Auto-sync & GitHub push complete at #{Time.now.strftime('%H:%M:%S')}."
       rescue => e
         puts "[OneDrive Watcher] Error during auto-sync: #{e.message}"
       end

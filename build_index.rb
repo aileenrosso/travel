@@ -54,6 +54,90 @@ def archive_and_classify_trips!(state_data, current_date = Date.today)
   puts "Trips breakdown: #{active_count} active hero, #{upcoming_count} upcoming, #{past_count} past archived."
 end
 
+def extract_pdf_text_macos(pdf_path)
+  escaped = pdf_path.gsub('\\', '\\\\').gsub('"', '\\"')
+  jxa = <<~JXA
+    ObjC.import("Quartz");
+    const url = $.NSURL.fileURLWithPath("#{escaped}");
+    const doc = $.PDFDocument.alloc.initWithURL(url);
+    if (doc && !doc.isNil()) {
+      ObjC.unwrap(doc.string);
+    } else {
+      "";
+    }
+  JXA
+  IO.popen(["osascript", "-l", "JavaScript", "-e", jxa], err: [:child, :out], &:read).force_encoding("UTF-8")
+rescue => e
+  ""
+end
+
+def auto_ingest_pdf_files!(state_data)
+  existing_pnrs = []
+  (state_data["trips"] || []).each do |trip|
+    (trip["flights"] || []).each do |fl|
+      existing_pnrs << fl["pnr"].to_s.upcase if fl["pnr"]
+    end
+  end
+
+  Dir.glob(File.join(LOCAL_TRAVEL_DIR, "*.{pdf,PDF}")).each do |pdf_file|
+    bname = File.basename(pdf_file)
+    # Check if JetBlue confirmation PDF
+    if bname =~ /JetBlue.*confirmation.*([A-Z0-9]{6})/i
+      pnr = $1.upcase
+      next if existing_pnrs.include?(pnr)
+
+      text = extract_pdf_text_macos(pdf_file)
+      next if text.nil? || text.strip.empty?
+
+      flight_num = (text[/Flight\s+#?:?\s*(\d{3,4})/i, 1] || "2537")
+      route_match = text.match(/\b([A-Z]{3})\b\s*(?:▶|►|-|>|\s)+\s*\b([A-Z]{3})\b\s+Flight\s+#{flight_num}/m) ||
+                    text.match(/\b(SJU|SDQ|PUJ|JFK|MCO|FLL|BOS)\b.*?\b(SJU|SDQ|PUJ|JFK|MCO|FLL|BOS)\b/m)
+      from_code = route_match ? route_match[1] : "SJU"
+      to_code   = route_match ? route_match[2] : "SDQ"
+
+      date_match = text.match(/(Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2})/i)
+      date_str = date_match ? "#{date_match[1]}, #{date_match[2]} #{date_match[3]}, 2026" : "2026"
+
+      times = text.scan(/(\d{1,2}:\d{2}\s*(?:am|pm))/i).flatten
+      dep_time = times[0] ? times[0].upcase : "12:00 PM"
+      arr_time = times[1] ? times[1].upcase : "1:30 PM"
+
+      seats = text.scan(/Seat:\s*([0-9]{1,2}[A-F])/i).flatten
+      tickets = text.scan(/Ticket\s+number:\s*(\d{10,14})/i).flatten
+
+      active_trip = (state_data["trips"] || []).find { |t| t["status"] == "active" } || (state_data["trips"] || []).first
+      if active_trip
+        active_trip["flights"] ||= []
+        active_trip["flights"] << {
+          "segment" => "Vuelo Sincronizado · #{from_code} ➔ #{to_code}",
+          "airline" => "JetBlue Airways",
+          "pnr" => pnr,
+          "date" => date_str,
+          "status" => "CONFIRMADO & EMITIDO",
+          "cabin" => "Main / EvenMore® Space · Mosaic 3 Priority",
+          "legs" => [
+            {
+              "flightNum" => "JetBlue #{flight_num} (B6 #{flight_num})",
+              "from" => from_code,
+              "fromCity" => from_code,
+              "to" => to_code,
+              "toCity" => to_code,
+              "dep" => "#{date_str} · #{dep_time}",
+              "arr" => "#{date_str} · #{arr_time}",
+              "duration" => "Directo",
+              "seats" => seats.any? ? "Aileen #{seats[0]} · Milton #{seats[1] || 'Asignado'} — EvenMore®" : "Asignados",
+              "perks" => "Mosaic 3: Priority Security, Embarque Prioritario, 2 Maletas Facturadas Gratis c/u.",
+              "tickets" => tickets.any? ? "Boletos: #{tickets.join(' · ')}" : "Confirmado"
+            }
+          ]
+        }
+        existing_pnrs << pnr
+        puts "[AUTO-PDF] Ingested new JetBlue flight #{flight_num} (#{from_code}->#{to_code}, PNR: #{pnr}) from #{bname}"
+      end
+    end
+  end
+end
+
 def ingest_directory_updates(state_data)
   scan_dirs = [LOCAL_TRAVEL_DIR, ONEDRIVE_DIR].uniq.select { |d| Dir.exist?(d) }
   discovered_files = []
@@ -64,10 +148,12 @@ def ingest_directory_updates(state_data)
     end
   end
 
+  auto_ingest_pdf_files!(state_data)
+
   today = Date.today
   archive_and_classify_trips!(state_data, today)
 
-  state_data["version"] = "5.6"
+  state_data["version"] = "5.7"
   state_data["lastUpdated"] = Time.now.strftime("%Y-%m-%d %H:%M:%S")
   state_data["discoveredFilesCount"] = discovered_files.size
 
@@ -1172,6 +1258,8 @@ def build_pwa!
                 <span style="color: var(--gold-dark);">🧭</span> Travel Planner
             </div>
             <div class="header-actions">
+                <input type="file" id="mobile-pdf-input" accept=".pdf,application/pdf" multiple style="display: none;" onchange="handleMobilePdfUpload(this.files)">
+                <button class="header-btn" onclick="triggerMobilePdfPicker()" title="Importar reserva PDF desde el móvil"><span style="font-size: 0.9rem;">📄</span> +PDF</button>
                 <button class="header-btn" id="sync-btn" onclick="syncAndRefresh()"><span id="sync-icon" style="font-size: 0.9rem; display: inline-block;">🔄</span> <span id="sync-text">Sincronizar</span></button>
                 <button class="header-btn" onclick="handleHeaderPrint()"><span style="font-size: 0.9rem;">🖨️</span> Imprimir</button>
             </div>
@@ -1322,9 +1410,25 @@ html_content << <<-'HTML_FOOTER'
             });
         }
 
+        function applyMobileImportedFlights(stateObj) {
+            if (!stateObj || !stateObj.trips) return;
+            try {
+                const imported = JSON.parse(localStorage.getItem('mobile_imported_flights_v1') || '[]');
+                if (!imported.length) return;
+                const activeTrip = stateObj.trips.find(t => t.status === 'active') || stateObj.trips[0];
+                if (!activeTrip) return;
+                if (!activeTrip.flights) activeTrip.flights = [];
+                imported.forEach(fl => {
+                    const exists = activeTrip.flights.some(existing => existing.pnr && fl.pnr && existing.pnr.toUpperCase() === fl.pnr.toUpperCase());
+                    if (!exists) {
+                        activeTrip.flights.push(fl);
+                    }
+                });
+            } catch (e) {}
+        }
+
         // Init App Data
         window.addEventListener('DOMContentLoaded', () => {
-            // Check if there is a pending toast after file:// reload
             const pendingMsg = sessionStorage.getItem('sync_toast_msg');
             if (pendingMsg) {
                 sessionStorage.removeItem('sync_toast_msg');
@@ -1333,16 +1437,14 @@ html_content << <<-'HTML_FOOTER'
                 }, 350);
             }
 
-            const cached = localStorage.getItem('travel_planner_v56_state');
+            const cached = localStorage.getItem('travel_planner_v57_state');
             let useEmbedded = true;
             if (cached) {
                 try {
                     const parsed = JSON.parse(cached);
-                    // Compare lastUpdated timestamps
                     if (parsed && parsed.lastUpdated && EMBEDDED_STATE.lastUpdated) {
                         const parsedTime = new Date(parsed.lastUpdated.replace(/-/g, '/')).getTime();
                         const embeddedTime = new Date(EMBEDDED_STATE.lastUpdated.replace(/-/g, '/')).getTime();
-                        // If embedded state is newer, or if cached has fewer trips, use embedded
                         if (parsedTime >= embeddedTime && (parsed.trips || []).length >= (EMBEDDED_STATE.trips || []).length) {
                             appData = parsed;
                             useEmbedded = false;
@@ -1356,17 +1458,53 @@ html_content << <<-'HTML_FOOTER'
                 saveState();
             }
 
-            // Ensure activitiesConfig exists on all trips
+            applyMobileImportedFlights(appData);
+
             (appData.trips || []).forEach(t => {
                 if (!t.activitiesConfig) t.activitiesConfig = { golf: true, beach: true };
             });
 
             renderAll();
+
+            // Background silent cloud check on startup so mobile always stays fresh
+            setTimeout(() => {
+                silentCloudCheck();
+            }, 800);
         });
 
         function saveState() {
             if (!appData) return;
-            localStorage.setItem('travel_planner_v56_state', JSON.stringify(appData));
+            localStorage.setItem('travel_planner_v57_state', JSON.stringify(appData));
+        }
+
+        async function silentCloudCheck() {
+            try {
+                const ts = Date.now();
+                const urls = [
+                    `https://raw.githubusercontent.com/aileenrosso/travel/main/state.json?_t=${ts}`,
+                    `./state.json?_t=${ts}`
+                ];
+                for (const url of urls) {
+                    try {
+                        const res = await fetch(url, { cache: 'no-store' });
+                        if (res.ok) {
+                            const remoteData = await res.json();
+                            if (remoteData && remoteData.lastUpdated && appData && appData.lastUpdated) {
+                                const rTime = new Date(remoteData.lastUpdated.replace(/-/g, '/')).getTime();
+                                const lTime = new Date(appData.lastUpdated.replace(/-/g, '/')).getTime();
+                                if (rTime > lTime) {
+                                    appData = remoteData;
+                                    applyMobileImportedFlights(appData);
+                                    saveState();
+                                    renderAll();
+                                    showToast('✨ Itinerario actualizado automáticamente desde la nube');
+                                    break;
+                                }
+                            }
+                        }
+                    } catch (e) {}
+                }
+            } catch (e) {}
         }
 
         async function syncAndRefresh() {
@@ -1379,82 +1517,106 @@ html_content << <<-'HTML_FOOTER'
             let synced = false;
             let syncSource = '';
 
-            // Clean up any legacy cache keys
-            localStorage.removeItem('travel_planner_v54_state');
-            localStorage.removeItem('travel_planner_v52_state');
-            localStorage.removeItem('travel_planner_v51_state');
-            localStorage.removeItem('travel_planner_v5_state');
+            // Clean up legacy cache keys
+            ['travel_planner_v56_state', 'travel_planner_v54_state', 'travel_planner_v52_state', 'travel_planner_v51_state', 'travel_planner_v5_state'].forEach(k => localStorage.removeItem(k));
 
-            // 1. Try local sync API (if local server is running)
-            try {
-                const apiEndpoints = ['/api/sync', 'http://localhost:8080/api/sync'];
-                for (const ep of apiEndpoints) {
-                    try {
-                        const controller = new AbortController();
-                        const timer = setTimeout(() => controller.abort(), 3500);
-                        const res = await fetch(ep, {
-                            method: 'GET',
-                            signal: controller.signal,
-                            cache: 'no-store',
-                            headers: { 'Accept': 'application/json' }
-                        });
-                        clearTimeout(timer);
-                        if (res.ok) {
-                            const data = await res.json();
-                            if (data && data.trips && data.trips.length > 0) {
-                                appData = data;
-                                saveState();
-                                syncSource = 'OneDrive en Vivo';
-                                synced = true;
-                                break;
-                            }
-                        }
-                    } catch (err) {}
-                }
-            } catch (e) {}
+            const isLocalhost = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
-            // 2. Try fetching static state.json directly
-            if (!synced) {
+            // 1. If on Mac localhost, trigger live OneDrive rebuild via /api/sync
+            if (isLocalhost) {
                 try {
                     const controller = new AbortController();
-                    const timer = setTimeout(() => controller.abort(), 2000);
-                    const res = await fetch('./state.json?_t=' + Date.now(), {
+                    const timer = setTimeout(() => controller.abort(), 3500);
+                    const res = await fetch('/api/sync', {
+                        method: 'GET',
                         signal: controller.signal,
-                        cache: 'no-store'
+                        cache: 'no-store',
+                        headers: { 'Accept': 'application/json' }
                     });
                     clearTimeout(timer);
                     if (res.ok) {
                         const data = await res.json();
                         if (data && data.trips && data.trips.length > 0) {
                             appData = data;
+                            applyMobileImportedFlights(appData);
                             saveState();
-                            syncSource = 'state.json';
+                            syncSource = 'OneDrive en Vivo';
                             synced = true;
                         }
                     }
                 } catch (e) {}
             }
 
-            // 3. Fallback: if running as local file (file:///) or offline
+            // 2. Cloud & Mobile Sync: Fetch simultaneously from GitHub Raw (instant, no CDN delay) and ./state.json
+            if (!synced && window.location.protocol !== 'file:') {
+                try {
+                    const ts = Date.now();
+                    const cloudUrls = [
+                        { url: `https://raw.githubusercontent.com/aileenrosso/travel/main/state.json?_t=${ts}`, label: 'Nube GitHub' },
+                        { url: `./state.json?_t=${ts}`, label: 'Servidor Web' }
+                    ];
+
+                    const results = await Promise.allSettled(
+                        cloudUrls.map(async (entry) => {
+                            const controller = new AbortController();
+                            const timer = setTimeout(() => controller.abort(), 4500);
+                            const res = await fetch(entry.url, { signal: controller.signal, cache: 'no-store' });
+                            clearTimeout(timer);
+                            if (!res.ok) throw new Error('HTTP ' + res.status);
+                            const json = await res.json();
+                            return { data: json, label: entry.label };
+                        })
+                    );
+
+                    let bestCandidate = null;
+                    let bestTime = 0;
+
+                    results.forEach(r => {
+                        if (r.status === 'fulfilled' && r.value?.data?.trips?.length > 0) {
+                            const t = new Date((r.value.data.lastUpdated || '').replace(/-/g, '/')).getTime() || 0;
+                            if (!bestCandidate || t > bestTime) {
+                                bestCandidate = r.value;
+                                bestTime = t;
+                            }
+                        }
+                    });
+
+                    if (bestCandidate) {
+                        appData = bestCandidate.data;
+                        applyMobileImportedFlights(appData);
+                        saveState();
+                        syncSource = bestCandidate.label;
+                        synced = true;
+                    }
+                } catch (e) {}
+            }
+
+            // 3. Fallback: local file or embedded master
             if (!synced) {
                 if (window.location.protocol === 'file:') {
-                    localStorage.removeItem('travel_planner_v52_state');
                     sessionStorage.setItem('sync_toast_msg', '✅ Aplicación actualizada con la versión más reciente del disco');
                     window.location.reload();
                     return;
                 } else {
                     appData = JSON.parse(JSON.stringify(EMBEDDED_STATE));
+                    applyMobileImportedFlights(appData);
                     saveState();
-                    syncSource = 'Datos Maestros';
+                    syncSource = 'Memoria Integrada';
                     synced = true;
                 }
             }
 
-            // Clear Service Worker Caches
+            // Clear Service Worker Caches & Update Registration
             if ('caches' in window) {
                 try {
                     const keys = await caches.keys();
                     await Promise.all(keys.map(k => caches.delete(k)));
+                } catch(e) {}
+            }
+            if ('serviceWorker' in navigator) {
+                try {
+                    const reg = await navigator.serviceWorker.getRegistration();
+                    if (reg) await reg.update();
                 } catch(e) {}
             }
 
@@ -1463,9 +1625,121 @@ html_content << <<-'HTML_FOOTER'
             if (icon) icon.classList.remove('spinning');
             if (text) text.textContent = 'Sincronizar';
 
-            const tripCount = (appData.trips || []).length;
+            const activeTrip = (appData.trips || []).find(t => t.status === 'active') || (appData.trips || [])[0];
+            const flightCount = activeTrip?.flights?.length || 0;
             const updatedTime = appData.lastUpdated ? appData.lastUpdated.split(' ')[1] || '' : '';
-            showToast(`✅ ${syncSource}: ${tripCount} viajes sincronizados (${updatedTime})`);
+            showToast(`✅ ${syncSource}: ${flightCount} vuelos activos (${updatedTime})`);
+        }
+
+        function triggerMobilePdfPicker() {
+            const input = document.getElementById('mobile-pdf-input');
+            if (input) {
+                input.value = '';
+                input.click();
+            }
+        }
+
+        async function loadPdfJsLibrary() {
+            if (window.pdfjsLib) return window.pdfjsLib;
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+                script.onload = () => {
+                    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                    resolve(window.pdfjsLib);
+                };
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        async function handleMobilePdfUpload(fileList) {
+            if (!fileList || fileList.length === 0) return;
+            showToast('📄 Analizando documento PDF en el móvil...');
+
+            try {
+                const pdfjsLib = await loadPdfJsLibrary();
+                let addedCount = 0;
+
+                for (const file of Array.from(fileList)) {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                    let fullText = '';
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const content = await page.getTextContent();
+                        fullText += content.items.map(item => item.str).join(' ') + '\n';
+                    }
+
+                    // Extract PNR (Confirmation code)
+                    const pnrMatch = fullText.match(/confirmation\s+code\s+is\s+([A-Z0-9]{6})/i) ||
+                                     file.name.match(/\b([A-Z]{6})\b/) ||
+                                     fullText.match(/Booking\s+reference[:\s]+([A-Z0-9]{5,6})/i);
+                    const pnr = pnrMatch ? pnrMatch[1].toUpperCase() : 'PDF' + Math.floor(100 + Math.random() * 900);
+
+                    const flightMatch = fullText.match(/Flight\s*#?:?\s*(\d{3,4})/i);
+                    const flightNum = flightMatch ? flightMatch[1] : '';
+
+                    const airports = fullText.match(/\b(SJU|SDQ|PUJ|MAD|CDG|BRI|BDS|FCO|JFK|MCO|FLL|BOS)\b/g) || [];
+                    const fromCode = airports[0] || 'SJU';
+                    const toCode = airports.find(a => a !== fromCode) || 'SDQ';
+
+                    const dateMatch = fullText.match(/(Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2})/i);
+                    const dateStr = dateMatch ? `${dateMatch[1]}, ${dateMatch[2]} ${dateMatch[3]}, 2026` : 'Confirmado 2026';
+
+                    const times = fullText.match(/\b\d{1,2}:\d{2}\s*(?:am|pm)\b/gi) || [];
+                    const depTime = times[0] ? times[0].toUpperCase() : 'Ver PDF';
+                    const arrTime = times[1] ? times[1].toUpperCase() : 'Ver PDF';
+
+                    const seats = Array.from(fullText.matchAll(/Seat:\s*([0-9]{1,2}[A-F])/gi)).map(m => m[1]);
+                    const tickets = Array.from(fullText.matchAll(/Ticket\s+number:\s*(\d{10,14})/gi)).map(m => m[1]);
+
+                    const isJetBlue = /jetblue/i.test(fullText) || /jetblue/i.test(file.name);
+                    const airlineName = isJetBlue ? 'JetBlue Airways' : (/iberia/i.test(fullText) ? 'Iberia' : 'Reserva Importada');
+
+                    const newFlightObj = {
+                        segment: `Vuelo Sincronizado Móvil · ${fromCode} ➔ ${toCode}`,
+                        airline: airlineName,
+                        pnr: pnr,
+                        date: dateStr,
+                        status: 'CONFIRMADO (MÓVIL)',
+                        cabin: isJetBlue ? 'Main / EvenMore® Space · Mosaic 3' : 'Cabina Confirmada',
+                        legs: [
+                            {
+                                flightNum: flightNum ? `${isJetBlue ? 'JetBlue' : airlineName} ${flightNum}` : file.name.replace(/\.pdf$/i, ''),
+                                from: fromCode,
+                                fromCity: fromCode,
+                                to: toCode,
+                                toCity: toCode,
+                                dep: `${dateStr} · ${depTime}`,
+                                arr: `${dateStr} · ${arrTime}`,
+                                duration: 'Directo',
+                                seats: seats.length ? `Aileen ${seats[0]} · Milton ${seats[1] || 'Asignado'}` : 'Confirmados en PDF',
+                                perks: isJetBlue ? 'Mosaic 3: Embarque Prioritario, 2 Maletas Gratis c/u.' : 'Reserva sincronizada desde el móvil.',
+                                tickets: tickets.length ? `Boletos: ${tickets.join(' · ')}` : `Archivo: ${file.name}`
+                            }
+                        ]
+                    };
+
+                    const storedImports = JSON.parse(localStorage.getItem('mobile_imported_flights_v1') || '[]');
+                    const alreadyIdx = storedImports.findIndex(x => x.pnr === pnr);
+                    if (alreadyIdx >= 0) {
+                        storedImports[alreadyIdx] = newFlightObj;
+                    } else {
+                        storedImports.push(newFlightObj);
+                    }
+                    localStorage.setItem('mobile_imported_flights_v1', JSON.stringify(storedImports));
+                    addedCount++;
+                }
+
+                applyMobileImportedFlights(appData);
+                saveState();
+                renderAll();
+                showToast(`✅ ${addedCount} PDF(s) importados y sincronizados en tu móvil`);
+            } catch (err) {
+                console.error('Error leyendo PDF:', err);
+                showToast('⚠️ No se pudo leer el PDF. Usa el botón Sincronizar.');
+            }
         }
 
         function showToast(msg) {
@@ -1473,7 +1747,7 @@ html_content << <<-'HTML_FOOTER'
             if (!toast) return;
             toast.textContent = msg;
             toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2200);
+            setTimeout(() => toast.classList.remove('show'), 2600);
         }
 
         function renderAll() {
@@ -1481,6 +1755,13 @@ html_content << <<-'HTML_FOOTER'
             renderPastTripsScreen();
             renderGlobalPacking();
             renderDocs();
+            // Also re-render open trip detail view if a trip is currently selected!
+            if (currentTripId) {
+                const openTrip = (appData.trips || []).find(t => t.id === currentTripId);
+                if (openTrip) {
+                    renderTripDetailContent(openTrip);
+                }
+            }
         }
 
         // Screen & Tab Routing
