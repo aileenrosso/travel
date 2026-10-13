@@ -67,7 +67,7 @@ def ingest_directory_updates(state_data)
   today = Date.today
   archive_and_classify_trips!(state_data, today)
 
-  state_data["version"] = "5.4"
+  state_data["version"] = "5.6"
   state_data["lastUpdated"] = Time.now.strftime("%Y-%m-%d %H:%M:%S")
   state_data["discoveredFilesCount"] = discovered_files.size
 
@@ -1333,7 +1333,7 @@ html_content << <<-'HTML_FOOTER'
                 }, 350);
             }
 
-            const cached = localStorage.getItem('travel_planner_v54_state');
+            const cached = localStorage.getItem('travel_planner_v56_state');
             let useEmbedded = true;
             if (cached) {
                 try {
@@ -1366,7 +1366,7 @@ html_content << <<-'HTML_FOOTER'
 
         function saveState() {
             if (!appData) return;
-            localStorage.setItem('travel_planner_v54_state', JSON.stringify(appData));
+            localStorage.setItem('travel_planner_v56_state', JSON.stringify(appData));
         }
 
         async function syncAndRefresh() {
@@ -1380,6 +1380,7 @@ html_content << <<-'HTML_FOOTER'
             let syncSource = '';
 
             // Clean up any legacy cache keys
+            localStorage.removeItem('travel_planner_v54_state');
             localStorage.removeItem('travel_planner_v52_state');
             localStorage.removeItem('travel_planner_v51_state');
             localStorage.removeItem('travel_planner_v5_state');
@@ -1941,6 +1942,8 @@ html_content << <<-'HTML_FOOTER'
                                         <div style="font-size: 0.72rem; color: var(--text-muted); border-top: 1px dashed var(--border-subtle); padding-top: 4px;">
                                             💺 Asientos: <strong>${leg.seats || 'Asignados'}</strong>
                                         </div>
+                                        ${leg.perks ? `<div style="font-size: 0.72rem; color: var(--gold-dark); margin-top: 4px;">✨ ${leg.perks}</div>` : ''}
+                                        ${leg.tickets ? `<div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 3px;">🎟️ ${leg.tickets}</div>` : ''}
                                     </div>
                                 `;
                             }
@@ -1961,11 +1964,12 @@ html_content << <<-'HTML_FOOTER'
                     }
 
                     card.innerHTML = `
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                             <span class="badge-status upcoming" style="background: rgba(0, 120, 210, 0.1); color: #0078D2; border: none;">✈️ ${fl.airline || fl.carrier}</span>
                             <span style="font-size: 0.74rem; font-weight: 800; color: var(--gold-dark);">${fl.pnr ? 'Loc: ' + fl.pnr : ''}</span>
                         </div>
-                        <div style="font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">${fl.segment || fl.flightNumber}</div>
+                        <div style="font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; font-weight: 700; margin-bottom: 4px;">${fl.segment || fl.flightNumber}</div>
+                        ${fl.cabin ? `<div style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); margin-bottom: 8px;">🥂 ${fl.cabin}${fl.date ? ' · ' + fl.date : ''}</div>` : ''}
                         ${legsContent}
                     `;
                     tabFlights.appendChild(card);
@@ -2465,13 +2469,14 @@ html_content << <<-'HTML_FOOTER'
             let climateBreakdownHtml = '';
 
             if (trip.id === 'trip-europe-autumn-2026') {
-                climateTitle = `🍂 Previsión Climática · Gran Otoño Europeo (${lowF}°F a ${highF}°F):`;
+                climateTitle = `🍂 Previsión Climática · R.D. & Gran Otoño Europeo (${lowF}°F a 88°F):`;
                 climateBreakdownHtml = `
-                    <div style="margin-bottom: 4px;">• <strong>París:</strong> 41°F a 59°F · Otoño fresco, niebla matutina y posibles lloviznas (Le Meurice, Louvre, paseos por el Sena).</div>
-                    <div style="margin-bottom: 4px;">• <strong>Borgoña (Beaune & Côte d'Or):</strong> 39°F a 57°F · Mínimas frías matutinas (39°F) y cavas subterráneas centenarias a 53°F constantes con alta humedad (Maison Joseph Drouhin y terroirs Grand Cru).</div>
-                    <div style="margin-bottom: 6px;">• <strong>Puglia & Matera (Sur de Italia):</strong> 52°F a 72°F · Clima mediterráneo templado, brisa costera en el yate Antares 11 (Polignano a Mare) y calles adoquinadas de piedra blanca.</div>
+                    <div style="margin-bottom: 4px;">• <strong>Rep. Dominicana (13–18 Oct & 1–2 Nov):</strong> 75°F a 88°F · Clima caribeño cálido para los días previos y el enlace final hacia San Juan.</div>
+                    <div style="margin-bottom: 4px;">• <strong>París (19–22 Oct):</strong> 41°F a 59°F · Otoño fresco, niebla matutina y posibles lloviznas (Le Meurice, Louvre, paseos por el Sena).</div>
+                    <div style="margin-bottom: 4px;">• <strong>Borgoña (22–25 Oct · Beaune):</strong> 39°F a 57°F · Mínimas frías matutinas (39°F) y cavas subterráneas centenarias a 53°F constantes con alta humedad (Maison Joseph Drouhin y terroirs Grand Cru).</div>
+                    <div style="margin-bottom: 6px;">• <strong>Puglia & Matera (25 Oct – 1 Nov):</strong> 52°F a 72°F · Clima mediterráneo templado, brisa costera en el yate Antares 11 (Polignano a Mare) y calles adoquinadas de piedra blanca.</div>
                     <div style="padding-top: 8px; border-top: 1px dashed #86EFAC; font-size: 0.74rem; color: #14532D; line-height: 1.45;">
-                        ❄️ <strong>Ajuste Térmico de Empaque Automático (${lowF}°F–${highF}°F):</strong> El checklist se ha adaptado a las temperaturas bajas esperadas en Francia: <strong>Abrigo pesado / Chaquetón de invierno</strong> y <strong>Trench impermeable</strong> esenciales para mínimas de 39°F; <strong>Fleece térmico / Cárdigan grueso de cashmere</strong> para las cavas a 53°F; y <strong>bufanda abrigada</strong>. Para Puglia se incluye cápsula náutica con cortavientos y calzado antideslizante para el yate. ⛳ Golf se mantiene desactivado al no formar parte de este itinerario.
+                        ❄️ <strong>Ajuste Térmico de Empaque Automático (${lowF}°F–${highF}°F):</strong> El checklist se ha adaptado a las temperaturas bajas esperadas en Francia: <strong>Abrigo pesado / Chaquetón de invierno</strong> y <strong>Trench impermeable</strong> esenciales para mínimas de 39°F; <strong>Fleece térmico / Cárdigan grueso de cashmere</strong> para las cavas a 53°F; y <strong>bufanda abrigada</strong>. Para Puglia y R.D. se incluye cápsula ligera / náutica con cortavientos y calzado antideslizante para el yate. ⛳ Golf se mantiene desactivado (activa el interruptor arriba si jugarás en R.D.).
                     </div>
                 `;
             } else if (trip.id === 'trip-spain-andalucia-sep2026') {

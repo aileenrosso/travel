@@ -1,7 +1,7 @@
 {
-  "version": "5.4",
+  "version": "5.6",
   "appName": "Travel Planner",
-  "lastUpdated": "2026-10-08 00:16:52",
+  "lastUpdated": "2026-10-12 22:47:11",
   "travelersProfile": {
     "primaryTravelers": "Milton Cruz & Aileen Rosso",
     "groupMembers": [
@@ -528,22 +528,22 @@
       "status": "active",
       "category": "active",
       "title": "Grand European Autumn: Paris, Burgundy & Puglia",
-      "subtitle": "Gira de otoño por Francia e Italia con amigos (Grupo de 6)",
-      "destination": "París, Borgoña & Puglia (Francia e Italia)",
+      "subtitle": "SJU ➔ Rep. Dominicana ➔ París, Borgoña & Puglia ➔ PUJ ➔ SJU · Gira de otoño con amigos (Grupo de 6)",
+      "destination": "París, Borgoña & Puglia (vía Rep. Dominicana)",
       "country": "Francia & Italia",
       "flag": "🥐🍷🌊",
       "coverImage": "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=1200&q=80",
-      "startDate": "2026-10-18",
-      "endDate": "2026-11-01",
-      "datesDisplay": "18 Oct – 01 Nov 2026",
-      "durationDays": 15,
+      "startDate": "2026-10-13",
+      "endDate": "2026-11-02",
+      "datesDisplay": "13 Oct – 02 Nov 2026",
+      "durationDays": 21,
       "climate": {
-        "summary": "Otoño fresco en Francia (39°F - 61°F), templado en Puglia (52°F - 72°F).",
+        "summary": "Otoño fresco en Francia (39°F - 61°F), templado en Puglia (52°F - 72°F), cálido en R.D. (75°F - 88°F).",
         "tempLowF": 39,
         "tempHighF": 72,
         "condition": "Fresco / Follaje Dorado",
         "icon": "🍂",
-        "packingAdvice": "Capas técnicas de lana/cashmere, trench impermeable para Francia; lino ligero y cortavientos para el yate en Puglia."
+        "packingAdvice": "Capas técnicas de lana/cashmere, abrigo pesado y trench impermeable para Francia; lino ligero y cortavientos para el yate en Puglia y días previos en R.D."
       },
       "activitiesConfig": {
         "golf": false,
@@ -563,7 +563,44 @@
       },
       "flights": [
         {
-          "segment": "Salida Transatlántica · Rep. Dominicana ➔ París vía Madrid",
+          "segment": "Tramo 1 · Posicionamiento San Juan ➔ Santo Domingo",
+          "airline": "JetBlue Airways",
+          "pnr": "CTKRIY",
+          "date": "Martes 13 Octubre 2026",
+          "status": "CONFIRMADO & EMITIDO",
+          "cabin": "Main / EvenMore® Space · Mosaic 3 Priority",
+          "tickets": [
+            {
+              "name": "Aileen Rosso",
+              "ticket": "2792121065103",
+              "seat": "2F",
+              "ff": "TrueBlue Mosaic 2009139422"
+            },
+            {
+              "name": "Milton Cruz",
+              "ticket": "2792121065104",
+              "seat": "2D",
+              "ff": "TrueBlue 2009139624"
+            }
+          ],
+          "legs": [
+            {
+              "flightNum": "JetBlue 2537 (B6 2537)",
+              "from": "SJU",
+              "fromCity": "San Juan Luis Muñoz Marín (Terminal A)",
+              "to": "SDQ",
+              "toCity": "Santo Domingo Las Américas",
+              "dep": "Mar 13 Oct · 12:45 PM",
+              "arr": "Mar 13 Oct · 1:48 PM",
+              "duration": "1h 03m (Directo)",
+              "seats": "Aileen 2F (Ventana) · Milton 2D (Pasillo) — EvenMore®",
+              "perks": "Mosaic 3: Priority Security, Embarque Prioritario, 2 Maletas Facturadas Gratis c/u + Carry-On.",
+              "tickets": "Boletos: Aileen 2792121065103 · Milton 2792121065104 · Tarifa Pagada: $348.04 USD"
+            }
+          ]
+        },
+        {
+          "segment": "Tramo 2 · Salida Transatlántica · Rep. Dominicana ➔ París vía Madrid",
           "airline": "Iberia",
           "pnr": "CDK85U",
           "agencyCode": "KZTOZG",
@@ -596,7 +633,8 @@
               "aircraft": "Airbus A330",
               "duration": "8h 20m",
               "seats": "Milton 04D · Aileen 04H",
-              "perks": "Cama Lie-Flat 180°, cena gourmet Michelin."
+              "perks": "Cama Lie-Flat 180°, cena gourmet Michelin.",
+              "tickets": "Boletos: Milton 0757551797698 · Aileen 0757551797700"
             },
             {
               "isLayover": true,
@@ -614,12 +652,13 @@
               "arr": "Lun 19 Oct · 17:55",
               "aircraft": "Airbus A321",
               "duration": "2h 10m",
-              "seats": "Milton 02D · Aileen 02F"
+              "seats": "Milton 02D · Aileen 02F",
+              "perks": "Cabina Business Europea · Servicio gastronómico a bordo."
             }
           ]
         },
         {
-          "segment": "Vuelo Intermedio · París / Borgoña ➔ Puglia (Bari)",
+          "segment": "Tramo 3 · Vuelo Intermedio · París / Borgoña ➔ Puglia (Bari)",
           "airline": "Air France (Operado por HOP!)",
           "pnr": "CEV4RW",
           "agencyCode": "SHROXL",
@@ -652,12 +691,14 @@
               "arr": "Dom 25 Oct · 19:00",
               "aircraft": "Embraer 190",
               "duration": "2h 20m (Directo)",
-              "seats": "Milton 14D · Aileen 14F"
+              "seats": "Milton 14D · Aileen 14F",
+              "perks": "SkyPriority & Acceso Air France Salon CDG T2G (Delta Platinum Medallion).",
+              "tickets": "Boletos: Milton 0577551797713 · Aileen 0577551797714"
             }
           ]
         },
         {
-          "segment": "Retorno · Puglia ➔ Roma ➔ Madrid ➔ Rep. Dominicana",
+          "segment": "Tramo 4 · Retorno Transatlántico · Puglia ➔ Roma ➔ Madrid ➔ Santo Domingo",
           "airline": "ITA Airways + Iberia",
           "pnr": "BWASGL (ITA) · CDK85U (Iberia)",
           "agencyCode": "UFAUMC / KZTOZG",
@@ -693,7 +734,8 @@
               "arr": "Dom 01 Nov · 07:35 AM",
               "aircraft": "Airbus A320",
               "duration": "1h 15m",
-              "seats": "Milton 11D · Aileen 11E"
+              "seats": "Milton 11D · Aileen 11E",
+              "tickets": "Boletos ITA: Milton 0557551797717 · Aileen 0557551797718"
             },
             {
               "isLayover": true,
@@ -729,7 +771,45 @@
               "arr": "Dom 01 Nov · 20:30 PM",
               "aircraft": "Airbus A330",
               "duration": "9h 15m",
-              "seats": "Milton 02D · Aileen 02H"
+              "seats": "Milton 02D · Aileen 02H",
+              "perks": "Cama Lie-Flat 180°, alta gastronomía a bordo."
+            }
+          ]
+        },
+        {
+          "segment": "Tramo 5 · Regreso Final al Hogar · Punta Cana ➔ San Juan",
+          "airline": "JetBlue Airways",
+          "pnr": "WDEPFE",
+          "date": "Lunes 02 Noviembre 2026",
+          "status": "CONFIRMADO & EMITIDO",
+          "cabin": "Main / EvenMore® Space · Mosaic 3 Priority",
+          "tickets": [
+            {
+              "name": "Aileen Rosso",
+              "ticket": "2792122069414",
+              "seat": "2F",
+              "ff": "TrueBlue Mosaic 2009139422"
+            },
+            {
+              "name": "Milton Cruz",
+              "ticket": "2792122069415",
+              "seat": "2D",
+              "ff": "TrueBlue 2009139624"
+            }
+          ],
+          "legs": [
+            {
+              "flightNum": "JetBlue 2332 (B6 2332)",
+              "from": "PUJ",
+              "fromCity": "Punta Cana (Terminal A)",
+              "to": "SJU",
+              "toCity": "San Juan Luis Muñoz Marín",
+              "dep": "Lun 02 Nov · 1:37 PM",
+              "arr": "Lun 02 Nov · 2:32 PM",
+              "duration": "55m (Directo)",
+              "seats": "Aileen 2F (Ventana) · Milton 2D (Pasillo) — EvenMore®",
+              "perks": "Mosaic 3: Embarque Prioritario, 2 Maletas Facturadas Gratis c/u + Carry-On.",
+              "tickets": "Boletos: Aileen 2792122069414 · Milton 2792122069415 · Tarifa Pagada: $700.30 USD"
             }
           ]
         }
@@ -794,6 +874,21 @@
         }
       ],
       "timeline": [
+        {
+          "date": "Mar 13 Oct",
+          "dest": "San Juan ➔ R.D.",
+          "title": "Vuelo Inicial · San Juan (SJU) ➔ Santo Domingo (SDQ) & Estancia en R.D.",
+          "items": [
+            "10:45 AM Llegada al Aeropuerto Luis Muñoz Marín (SJU Terminal A) — Priority Security (EvenMore® / Mosaic 3)",
+            "12:45 PM Salida en vuelo directo JetBlue 2537 (SJU ➔ SDQ) · Código de confirmación: CTKRIY",
+            "Asientos EvenMore® asignados: Aileen 2F (Ventana) y Milton 2D (Pasillo) · 2 maletas facturadas gratis c/u (Mosaic Perk)",
+            "1:48 PM Aterrizaje en el Aeropuerto Internacional Las Américas (SDQ), Santo Domingo",
+            "Estancia previa en República Dominicana (13 al 18 de octubre) antes del vuelo transatlántico hacia Europa"
+          ],
+          "lunchOptions": [
+
+          ]
+        },
         {
           "date": "Dom 18 Oct",
           "dest": "Salida",
@@ -1060,8 +1155,8 @@
         },
         {
           "date": "Dom 01 Nov",
-          "dest": "Retorno",
-          "title": "Retorno en Business · Brindisi ➔ Roma ➔ Madrid ➔ SDQ",
+          "dest": "Retorno ➔ R.D.",
+          "title": "Retorno Transatlántico en Business · Brindisi ➔ Roma ➔ Madrid ➔ SDQ",
           "items": [
             "04:45 AM Check-out y traslado en minivan a Brindisi BDS (35 min)",
             "06:20 AM Vuelo AZ 1620 (ITA Airways) BDS a Roma FCO T1 (asientos 11D/11E, llega 07:35 AM)",
@@ -1069,13 +1164,28 @@
             "12:00 PM Vuelo IB 648 (Iberia Business) Roma FCO a Madrid MAD T4 (asientos 02D/02F, llega 14:35)",
             "Tránsito ágil a T4S y abordaje del vuelo transatlántico",
             "16:15 PM Vuelo IB 263 (Iberia Business Lie-Flat) MAD T4S a Santo Domingo SDQ (asientos 02D/02H)",
-            "20:30 PM Llegada a SDQ concluyendo el gran viaje otoñal en Business Class, y enlace a San Juan"
+            "20:30 PM Llegada a Santo Domingo (SDQ) y descanso en República Dominicana"
           ],
           "lunchOptions": [
             {
               "name": "Sala VIP Piazza di Spagna (Roma FCO T1)",
               "query": "Piazza di Spagna Lounge FCO T1 Rome"
             }
+          ]
+        },
+        {
+          "date": "Lun 02 Nov",
+          "dest": "Punta Cana ➔ San Juan",
+          "title": "Vuelo Final de Regreso al Hogar · Punta Cana (PUJ) ➔ San Juan (SJU)",
+          "items": [
+            "Traslado al Aeropuerto Internacional de Punta Cana (PUJ Terminal A)",
+            "Check-in preferente Mosaic 3 (2 maletas facturadas gratis c/u; cierre de equipaje 60 min antes)",
+            "1:37 PM Salida en vuelo directo JetBlue 2332 (PUJ ➔ SJU) · Código de confirmación: WDEPFE",
+            "Asientos EvenMore® asignados: Aileen 2F (Ventana) y Milton 2D (Pasillo) · Boletos: 2792122069414 / 2792122069415",
+            "2:32 PM Aterrizaje en San Juan Luis Muñoz Marín (SJU), culminando el gran viaje otoñal"
+          ],
+          "lunchOptions": [
+
           ]
         }
       ],
@@ -1164,5 +1274,5 @@
       "completed": false
     }
   ],
-  "discoveredFilesCount": 31
+  "discoveredFilesCount": 45
 }
